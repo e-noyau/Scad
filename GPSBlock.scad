@@ -1,5 +1,3 @@
-// This is a comment
-
 // Same as mirror() but duplicates the children as opposed to just move it.
 module mirrored(v) {
 	children();
