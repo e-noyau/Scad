@@ -141,7 +141,7 @@ module final() {
 		// Dig a hole for the cable
 		translate([0,30,20])
 		    rotate([80, 0, 0])
-		      #rounded_cube([15, 15, 60], 5);
+		      rounded_cube([15, 15, 60], 5);
 		//#cylinder(100, 7, 7, center = true);
   }
 	translate([0,0,12.8])
