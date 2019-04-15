@@ -170,18 +170,31 @@ module screw_holes(height = 50, diameter = 5.5) {
 }
 
 
-module test_print() {
+module test_print_1() {
 	difference() {
 	  union() {
 	    inner_base();
 	    linear_extrude(3) outer_base_2D();
   	}
-		translate([0,-5,-3])
+		translate([0,-5,-6])
 	  #screw_holes(20, 5);
 	}
 
 }
 
-//test_print();
-final();
+module test_print_2() {
+	difference() {
+	  union() {
+	    inner_base();
+  	}
+		//translate([0,-5,-6])
+	  #cylinder(20, 5/2, 5/2, center = true, $fn = 50);
+	}
+}
+
+translate([60,0,0])
+test_print_2();
+
+test_print_1();
+//final();
 
