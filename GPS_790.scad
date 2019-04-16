@@ -87,7 +87,7 @@ module inner_base() {
 module screw_point() {
   rotate([0, 180, 0])
   mirrored([1,0,0])
-  translate([-17,0,8])
+  translate([-16,0,8])
   rotate([0,0,-5])
   difference () {
    rounded_cube([10,20,16], 3);
@@ -155,7 +155,7 @@ module cable_hole() {
 }
 
 // A simple screw hole, by design for 4mm screws with space for the bolt.
-module screw_hole(height, diameter = 4.1, hex_diameter = 6.2, rotation = 0) {
+module screw_hole(height, diameter = 4.1, hex_diameter = 5.85, rotation = 0) {
   cylinder(height, diameter/2, diameter/2, center = true, $fn = 50);
   translate([0, 0, -height/4 - height/8]) rotate([0, 0, rotation])
     cylinder_outer(height = height/4, radius = hex_diameter/2, fn = 6);
@@ -215,7 +215,7 @@ module test_inner() {
 module test_outter() {
   difference() {
 		final_shape();
-		translate([0,0,39])
+		translate([0,0,37])
    	  cube(70, 70, 70, center = true);
 		translate([0,0,-35-3-.1])
 	 	  cube(70, 70, 70, center = true);
@@ -223,11 +223,17 @@ module test_outter() {
 }
 
 module test_print() {
-translate([35, 0, 3])
-   test_outter();
-translate([-35, 0, 0])
+  translate([35, 0, 2])
   rotate([0, 180, 0])
+    test_outter();
+  translate([-35, 0, 0])
+    rotate([0, 180, 0])
 	    test_inner();
+
+/***
+translate([0, 0, 1.5])
+  screw_test_print();
+***/
 }
 
 
@@ -250,8 +256,8 @@ module screw_test_print() {
 }
 
 //screw_test_print();
-test_print();
-//ready_to_print();
+//test_print();
+ready_to_print();
 
 
 
