@@ -14,12 +14,20 @@ angle_grind = 1.5;
 
 outer_front = 3.15;
 outer_back = 3;
-outer_side = 6;
+
+outer_side_front = 6;
+outer_side_back = 7.5;
 
 front_angle = 25;
 
 amps_large = 38; // The AMPS format is 4 holes.
 amps_small = 30;
+
+support_width = 10;
+support_length = 20;
+support_height = 14;
+distance_from_spline = 16.5;
+side_angle = 5;
 
 // Same as mirror() but duplicates the children as opposed to just move it.
 module mirrored(v) {
@@ -76,7 +84,14 @@ module inner_base_2D() {
 // The innerbase is what fits in the hole, snuggly, to hold everything in
 // place. This is the 3D extruded version.
 module inner_base() {
-  translate([0,0,-3]) linear_extrude(3) inner_base_2D();
+	union() {
+		screw_point();
+		difference() {
+		  translate([0,0,-3]) 
+			  linear_extrude(3) inner_base_2D();
+			screw_point_hole();
+		}
+	}
 }
 
 // A complex way to buid the two attachements at the bottom of the piece where
@@ -86,17 +101,27 @@ module inner_base() {
 // metalic clips with captive nuts that are installed on the original cover.
 module screw_point() {
   rotate([0, 180, 0])
-  mirrored([1,0,0])
-  translate([-16,0,8])
-  rotate([0,0,-5])
-  difference () {
-   rounded_cube([10,20,16], 3);
-   rounded_cube([8,18,16+1], 3);
-   translate([5,0,0])
-     cube([8.5,18,16+1], center = true);
+    mirrored([1, 0, 0])
+     translate([-distance_from_spline, 0, support_height/2])
+      rotate([0, 0, -side_angle])
+        difference () {
+          rounded_cube([support_width, support_length, support_height], 3);
+          rounded_cube([support_width - 2, support_length - 2, support_height + 1], 3);
+          translate([5,0,0])
+            cube([support_width - 2, support_length - 2,support_height + 1], center = true);
    translate([0,0,11])
-   rotate([0,-45,0])
-     cube([8.5,22,25], center = true);
+     rotate([0,-45,0])
+       cube([support_width - 2, 22, 25], center = true);
+  }  
+}
+
+module screw_point_hole() {
+  rotate([0, 180, 0])
+    mirrored([1, 0, 0])
+     translate([-distance_from_spline -4, 0, support_height/2 - 4])
+      rotate([0, 0, -side_angle])
+        difference () {
+          cube([10, support_length-4, support_height], 3, center = true);
   }  
 }
 
@@ -109,10 +134,10 @@ module outer_base_2D() {
     polygon([
       [0, -spline_length / 2 - outer_front],
       [0, spline_length / 2 + outer_back],
-      [petit_cote + outer_side, spline_length / 2 + outer_back],
+      [petit_cote + outer_side_back, spline_length / 2 + outer_back],
       
-      [grand_cote + outer_side, -spline_length / 2 + grand_cote_slip + angle_grind - outer_front],
-      [grand_cote + outer_side - angle_grind, -spline_length / 2 + grand_cote_slip - outer_front]
+      [grand_cote + outer_side_front, -spline_length / 2 + grand_cote_slip + angle_grind - outer_front],
+      [grand_cote + outer_side_front - angle_grind, -spline_length / 2 + grand_cote_slip - outer_front]
     ]);
 }
 
@@ -125,7 +150,7 @@ module outer_base() {
 // used as an intersection with the big square base to make something that
 // looks nice. With a 25º angle on the front.
 module shaper(top_radius = 6) {
-  cube_l = (grand_cote + outer_side) * 2;
+  cube_l = (grand_cote + outer_side_front) * 2;
   cube_w = spline_length + outer_front + outer_back + 15;
   cube_h = 40;
 
@@ -258,7 +283,5 @@ module screw_test_print() {
 //screw_test_print();
 //test_print();
 ready_to_print();
-
-
 
 
