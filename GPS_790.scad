@@ -25,7 +25,7 @@ amps_small = 30;
 
 support_width = 10;
 support_length = 20;
-support_height = 14;
+support_height = 15;
 distance_from_spline = 16.5;
 side_angle = 5;
 
@@ -84,14 +84,14 @@ module inner_base_2D() {
 // The innerbase is what fits in the hole, snuggly, to hold everything in
 // place. This is the 3D extruded version.
 module inner_base() {
-	union() {
-		screw_point();
-		difference() {
-		  translate([0,0,-3]) 
-			  linear_extrude(3) inner_base_2D();
-			screw_point_hole();
-		}
-	}
+  union() {
+    screw_point();
+    difference() {
+      translate([0,0,-3])
+        linear_extrude(3) inner_base_2D();
+      screw_point_hole();
+    }
+  }
 }
 
 // A complex way to buid the two attachements at the bottom of the piece where
@@ -106,9 +106,9 @@ module screw_point() {
       rotate([0, 0, -side_angle])
         difference () {
           rounded_cube([support_width, support_length, support_height], 3);
-          rounded_cube([support_width - 2, support_length - 2, support_height + 1], 3);
+          rounded_cube([support_width - 2.5, support_length - 3, support_height + 1], 3);
           translate([5,0,0])
-            cube([support_width - 2, support_length - 2,support_height + 1], center = true);
+            cube([support_width - 3, support_length - 3,support_height + 1], center = true);
    translate([0,0,11])
      rotate([0,-45,0])
        cube([support_width - 2, 22, 25], center = true);
@@ -175,7 +175,7 @@ module outside_shape() {
 module cable_hole() {
   // Dig a hole for the cable
    translate([0,spline_length/2,0])
- 	   rotate([-45, 0, 0])
+      rotate([-45, 0, 0])
        rounded_cube([15, 15, 60], 5);
 }
 
@@ -189,15 +189,15 @@ module screw_hole(height, diameter = 4.1, hex_diameter = 5.85, rotation = 0) {
 // Two symetrical screws separated by the larger AMPS size.
 module two_screws_amps(separation, height, rotation) {
   mirrored([1,0,0])
-	translate([separation/2, 0, 0])
+  translate([separation/2, 0, 0])
     screw_hole(height = height, rotation = rotation);
 }
 
 // Two set of two screws separated by the smaller AMPS size.
 module four_amps_screws() {
-	translate([0, amps_small/2, 0])
+  translate([0, amps_small/2, 0])
     two_screws_amps(separation = amps_large, height = 70, rotation = 36);
-	translate([0, -amps_small/2, 0])
+  translate([0, -amps_small/2, 0])
     two_screws_amps(separation = amps_large, height = 50, rotation = 36);
 }
 
@@ -205,9 +205,9 @@ module four_amps_screws() {
 module shape_with_holes() {
   difference() {
     outside_shape();
-	  rotate([front_angle, 0, 0])
-		  translate([0, -3, 20])
-		    four_amps_screws();
+    rotate([front_angle, 0, 0])
+      translate([0, -3, 20])
+        four_amps_screws();
     // Dig a hole for the cable
     cable_hole();
   }
@@ -215,7 +215,7 @@ module shape_with_holes() {
 
 // Adds the two attachments points to the final shape.
 module final_shape() {
-	shape_with_holes();
+  shape_with_holes();
   screw_point();
 }
 
@@ -224,26 +224,26 @@ module final_shape() {
 module ready_to_print () {
   translate([0,0,12.8])
   rotate([-25, 180, 0])
-	final_shape();
+  final_shape();
 }
 
 module test_inner() {
   difference() {
-		final_shape();
-		translate([0,0,35-.1])
-   	  cube(70, 70, 70, center = true);
-		translate([0,0,-35-5])
-	 	  cube(70, 70, 70, center = true);
-	}
+    final_shape();
+    translate([0,0,35-.1])
+       cube(70, 70, 70, center = true);
+    translate([0,0,-35-5])
+       cube(70, 70, 70, center = true);
+  }
 }
 
 module test_outter() {
   difference() {
-		final_shape();
-		translate([0,0,37])
-   	  cube(70, 70, 70, center = true);
-		translate([0,0,-35-3-.1])
-	 	  cube(70, 70, 70, center = true);
+    final_shape();
+    translate([0,0,37])
+       cube(70, 70, 70, center = true);
+    translate([0,0,-35-3-.1])
+       cube(70, 70, 70, center = true);
   }
 }
 
@@ -253,7 +253,7 @@ module test_print() {
     test_outter();
   translate([-35, 0, 0])
     rotate([0, 180, 0])
-	    test_inner();
+      test_inner();
 
 /***
 translate([0, 0, 1.5])
@@ -263,21 +263,21 @@ translate([0, 0, 1.5])
 
 
 module screw_test_print() {
-	difference() {
-		cube([10, 40, 3], center = true);
-		rotate([180, 0, 0]) translate([0,0,3.9]){
-		  translate([0,-15,0])
+  difference() {
+    cube([10, 40, 3], center = true);
+    rotate([180, 0, 0]) translate([0,0,3.9]){
+      translate([0,-15,0])
         screw_hole(height = 11, hex_diameter = 6.2);
-		  translate([0,-7,0])
-		    screw_hole(height = 11, hex_diameter = 6.1);
-			translate([0,1,0])
-	      screw_hole(height = 11, hex_diameter = 6.0);
-		  translate([0,8.5,0])
-		    screw_hole(height = 11, hex_diameter = 5.9);
-			translate([0,16,0])
-			  screw_hole(height = 11, hex_diameter = 5.8);
-	  }
-	}
+      translate([0,-7,0])
+        screw_hole(height = 11, hex_diameter = 6.1);
+      translate([0,1,0])
+        screw_hole(height = 11, hex_diameter = 6.0);
+      translate([0,8.5,0])
+        screw_hole(height = 11, hex_diameter = 5.9);
+      translate([0,16,0])
+        screw_hole(height = 11, hex_diameter = 5.8);
+    }
+  }
 }
 
 //screw_test_print();
