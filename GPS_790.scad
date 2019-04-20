@@ -160,8 +160,53 @@ module shaper(top_radius = 6) {
         rounded_cube([cube_l, cube_h, cube_w], top_radius);
 }
 
+module KTM_2D() {
+  polygon([
+		[0, 36.1],
+		[11.79, 8.31],
+		[27.85, 8.33],
+		[23.33, 19.11],
+		[36.8, 8.3],
+		[47.8, 8.3],
+		[34.65, 19.29],
+		[42.26, 29.28],
+		[51.89, 5.06],
+		[29.02, 5.06],
+		[30.86, 0],
+		[92.8, 0],
+		[91.35, 5.06],
+		[68.27, 5.06],
+		[61.76, 23.86],
+		[77.28, 8.31],
+		[91.51, 8.31],
+		[89.25, 18.93],
+		[101.21, 8.33],
+		[116.05, 8.33],
+		[109.9, 36.13],
+		[95.15, 36.13],
+		[96.69, 26.15],
+		[85.42, 36.1],
+		[71.73, 36.13],
+		[73.52, 26.04],
+		[62.72, 36.11],
+		[27.78, 36.1],
+		[20.28, 26.15],
+		[16.21, 36.1],
+		[0, 36.1],
+  ]);
+}
+
+module KTM_3D() {
+	translate([-23, 0, 14.2])
+	rotate([-25, 0, 180]) 
+	scale(.4)
+	mirror()
+  linear_extrude(2) KTM_2D();
+}
+
 // This assemble the whole shape, without any holes.
-module outside_shape() {
+module outside_shape(logo) {
+	difference() {
   union() {
     inner_base();
     intersection() {
@@ -169,6 +214,9 @@ module outside_shape() {
       outer_base();
     }
   }
+	if(logo)
+		KTM_3D();
+}
 }
 
 // A model of the hole at the back of the piece to allow the cable to go in.
@@ -202,9 +250,9 @@ module four_amps_screws() {
 }
 
 // Dig the holes in the shape.
-module shape_with_holes() {
+module shape_with_holes(logo) {
   difference() {
-    outside_shape();
+    outside_shape(logo);
     rotate([front_angle, 0, 0])
       translate([0, -3, 20])
         four_amps_screws();
@@ -214,22 +262,22 @@ module shape_with_holes() {
 }
 
 // Adds the two attachments points to the final shape.
-module final_shape() {
-  shape_with_holes();
+module final_shape(logo) {
+  shape_with_holes(logo);
   screw_point();
 }
 
 
 // Rotate everything to make it ready to print from bottom to top.
-module ready_to_print () {
+module ready_to_print(logo = true) {
   translate([0,0,12.8])
   rotate([-25, 180, 0])
-  final_shape();
+  final_shape(logo);
 }
 
 module test_inner() {
   difference() {
-    final_shape();
+    final_shape(logo = false);
     translate([0,0,35-.1])
        cube(70, 70, 70, center = true);
     translate([0,0,-35-5])
@@ -239,7 +287,7 @@ module test_inner() {
 
 module test_outter() {
   difference() {
-    final_shape();
+    final_shape(logo = false);
     translate([0,0,37])
        cube(70, 70, 70, center = true);
     translate([0,0,-35-3-.1])
@@ -282,6 +330,6 @@ module screw_test_print() {
 
 //screw_test_print();
 //test_print();
-ready_to_print();
+ready_to_print(logo = true);
 
 
