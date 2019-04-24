@@ -330,6 +330,6 @@ module screw_test_print() {
 
 //screw_test_print();
 //test_print();
-ready_to_print(logo = true);
+ready_to_print(logo = false);
 
 
