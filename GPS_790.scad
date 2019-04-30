@@ -16,7 +16,7 @@ outer_front = 3.15;
 outer_back = 3;
 
 outer_side_front = 6;
-outer_side_back = 7.5;
+outer_side_back = 9;
 
 front_angle = 25;
 
@@ -228,7 +228,7 @@ module cable_hole() {
 }
 
 // A simple screw hole, by design for 4mm screws with space for the bolt.
-module screw_hole(height, diameter = 4.1, hex_diameter = 5.85, rotation = 0) {
+module screw_hole(height, diameter = 3.4, hex_diameter = 5.85, rotation = 0) {
   cylinder(height, diameter/2, diameter/2, center = true, $fn = 50);
   translate([0, 0, -height/4 - height/8]) rotate([0, 0, rotation])
     cylinder_outer(height = height/4, radius = hex_diameter/2, fn = 6);
@@ -270,7 +270,7 @@ module final_shape(logo) {
 
 // Rotate everything to make it ready to print from bottom to top.
 module ready_to_print(logo = true) {
-  translate([0,0,12.8])
+  translate([0,0,13.655])
   rotate([-25, 180, 0])
   final_shape(logo);
 }
@@ -302,11 +302,6 @@ module test_print() {
   translate([-35, 0, 0])
     rotate([0, 180, 0])
       test_inner();
-
-/***
-translate([0, 0, 1.5])
-  screw_test_print();
-***/
 }
 
 
