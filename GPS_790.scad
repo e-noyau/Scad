@@ -263,7 +263,7 @@ module shape_with_holes(logo, back_hole) {
 }
 
 // Adds the two attachments points to the final shape.
-module final_shape(logo, back_hole) {
+module final_shape(logo, back_hole = true) {
   shape_with_holes(logo, back_hole);
   screw_point();
 }
