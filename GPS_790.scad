@@ -250,20 +250,21 @@ module four_amps_screws() {
 }
 
 // Dig the holes in the shape.
-module shape_with_holes(logo) {
+module shape_with_holes(logo, back_hole) {
   difference() {
     outside_shape(logo);
     rotate([front_angle, 0, 0])
       translate([0, -3, 20])
         four_amps_screws();
     // Dig a hole for the cable
-    cable_hole();
+    if (back_hole)
+      cable_hole();
   }
 }
 
 // Adds the two attachments points to the final shape.
-module final_shape(logo) {
-  shape_with_holes(logo);
+module final_shape(logo, back_hole) {
+  shape_with_holes(logo, back_hole);
   screw_point();
 }
 
@@ -287,7 +288,7 @@ module test_inner() {
 
 module test_outter() {
   difference() {
-    final_shape(logo = false);
+    final_shape(logo = false, back_hole = true);
     translate([0,0,37])
        cube(70, 70, 70, center = true);
     translate([0,0,-35-3-.1])
@@ -323,8 +324,19 @@ module screw_test_print() {
   }
 }
 
+module splitter() {
+  #translate([0,0,54]) cube([100, 100, 100], center = true);
+
+}
+
+module final_shape_bottom() {
+  difference() {
+    final_shape(back_hole = false);
+    splitter();
+  }
+}
 //screw_test_print();
 //test_print();
 ready_to_print(logo = false);
-
+//final_shape_bottom();
 
