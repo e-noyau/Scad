@@ -34,10 +34,10 @@ module mirrored(v) {
 }
 
 // Build a negative rounded corner to soften a square angle.
-module rounded_edge(radius, height) {
+module rounded_edge(radius, height, extra = 0) {
   translate([radius / 2, radius / 2, 0])
   difference() {
-    cube([radius+.01, radius+.01, height + .01], center = true);
+    cube([radius+.01 + extra, radius+.01 +extra, height + .01], center = true);
     translate([radius / 2, radius /2, 0])
       cylinder(r = radius, h = height + .02, center = true, $fn = 100);
   }
@@ -106,16 +106,9 @@ module outer_base() {
 // The raw base
 module base() {
 	union() {
-	  difference() {
-      union() {
-		    outer_base();
-        inner_base();
-	    };
-      translate([0,0,-.01])
-        scale(v = [.9, .9, 1])
-          inner_base(height = 3);
-	  }
-	  screw_point();
+	  outer_base();
+    inner_base();
+    screw_point();
 	}
 }
 
@@ -125,29 +118,47 @@ module base() {
 // surfaces with holes.  Those are also inset a bit to leave space for the
 // metalic clips with captive nuts that are installed on the original cover.
 
-support_width = 26;
+hole_depth = 12;
+hole_diameter = 7;
+shift_down = 2.2;
+shift_forward = -1;
+
+support_width = hole_depth;//26;
 support_length = 20;
-support_height = 21; 
+support_height = 23; 
 distance_from_spline = 22.5789;
 side_angle = 4.817;
 
-hole_depth = 12;
-hole_diameter = 7;
-shift_down = 2;
-shift_forward = 1;
+nudge = 12;
 
 module screw_point() {
-  rotate([0, 180, 0])
-    mirrored([1, 0, 0])
-     translate([-(distance_from_spline - support_width/2) , 0, support_height/2 -3])
-      rotate([0, 0, -side_angle])
-        difference () {
-          rounded_cube([support_width, support_length, support_height], 3);
-					translate([-(support_width -hole_depth)/2 -0.001, -shift_forward, shift_down])
-					  rotate([0,90,0])
-				      cylinder(hole_depth, hole_diameter/2, hole_diameter/2, center = true, $fn = 50);
-					
-  }  
+	difference() {
+		union() {
+		  rotate([0, 180, 0])
+		    mirrored([1, 0, 0])
+		     translate([-(distance_from_spline - support_width/2) , 0, support_height/2 -3])
+		      rotate([0, 0, -side_angle])
+		        difference () {
+		          rounded_cube([support_width, support_length, support_height], 3);
+							translate([-(support_width - hole_depth)/2 -0.001, -shift_forward, shift_down])
+							  rotate([0,90,0])
+						      cylinder(hole_depth + .01, hole_diameter/2, hole_diameter/2, center = true, $fn = 50);	
+		  }
+	
+			translate([0 , -.2, -support_height/2 +3])
+			 rounded_cube([(distance_from_spline - hole_depth)*2 + nudge, support_length, support_height], 3, center = true);
+		}
+		mirrored([0,1,0])
+		translate([0 , -support_length/2, -support_height + 3])
+	  rotate([0, 90, 0])
+		rotate([0,0,90])
+		   rounded_edge(support_length / 2, distance_from_spline * 3, extra = 0);
+		
+	 		mirrored([0,1,0])
+			translate([0 , -support_length/2-1.29, -support_height/2+3])
+			cube([distance_from_spline *3,3,support_height+.001], center = true);
+		
+	}
 }
 
 
@@ -167,7 +178,7 @@ module shaper(top_radius = 6) {
 
 
 // This assemble the whole shape, without any holes.
-module outside_shape(logo) {
+module outside_shape() {
   intersection() {
     shaper();
     base();
@@ -205,9 +216,9 @@ module four_amps_screws() {
 }
 
 // Dig the holes in the shape.
-module shape_with_holes(logo, back_hole) {
+module shape_with_holes(back_hole) {
   difference() {
-    outside_shape(logo);
+    outside_shape();
     rotate([front_angle, 0, 0])
       translate([0, -3, 20])
         four_amps_screws();
@@ -217,25 +228,25 @@ module shape_with_holes(logo, back_hole) {
   }
 }
 
-shape_with_holes(back_hole = true);
+//shape_with_holes(back_hole = true);
 
 // Adds the two attachments points to the final shape.
-module final_shape(logo, back_hole = true) {
-  shape_with_holes(logo, back_hole);
+module final_shape(back_hole = true) {
+  shape_with_holes(back_hole);
   screw_point();
 }
 
 
 // Rotate everything to make it ready to print from bottom to top.
-module ready_to_print(logo = true) {
+module ready_to_print() {
   translate([0,0,13.655])
   rotate([-25, 180, 0])
-  final_shape(logo);
+  final_shape();
 }
 
 module test_inner() {
   difference() {
-    final_shape(logo = false);
+    final_shape();
     translate([0,0,35-.1])
        cube(70, 70, 70, center = true);
     translate([0,0,-35-5])
@@ -245,7 +256,7 @@ module test_inner() {
 
 module test_outter() {
   difference() {
-    final_shape(logo = false, back_hole = true);
+    final_shape(back_hole = true);
     translate([0,0,37])
        cube(70, 70, 70, center = true);
     translate([0,0,-35-3-.1])
@@ -294,7 +305,12 @@ module final_shape_bottom() {
 }
 //screw_test_print();
 //test_print();
-//ready_to_print(logo = false);
+ready_to_print();
 //final_shape_bottom();
 
 //outside_shape();
+
+//translate([23,0,12])
+//rotate([front_angle, 0,side_angle])
+//translate([0,2,1.5])
+//#cube([24, 27, 12]);
