@@ -2,7 +2,37 @@
 // piece of plastic labelled "Remove for GPS mount". That piece only covers a
 // hole without any space to actually install a GPS.
 
+// This version is designed for metallic inserts. It needs six inserts, four
+// for the AMPS pattern on top, two to secure the part to the bike.
+use <noyau_utils.scad>;
 
+// This is the size of the insert hole for the AMPs pattern on top. Watch out
+// for the depth, as anything longer may get accross the part completely.
+amps_insert_radius = 2.7;
+amps_insert_depth = 6;
+
+// This is the size of the inserts to secure the part to the bike.
+screw_hole_radius = amps_insert_radius;
+screw_hole_depth = amps_insert_depth;
+
+// Used to nudge the hole a bit to get it in perfect alignment.
+screw_shift_down = 2.2;
+screw_shift_forward = -1;
+
+// The angle of the piece from the top of the hole. This is tha same angle as
+// the original part shipped with the bike.
+front_angle = 25;
+
+// The AMPS format is 4 holes, and this defines the distance between the holes.
+amps_large = 38; 
+amps_small = 30;
+
+// ----------------------------------------------------------------------------
+// Base.
+// ----------------------------------------------------------------------------
+// These constants are defining the part of the piece in contact with the bike.
+// the form is complex, it is not a simple square.
+//
 spline_length = 50.5;
 petit_cote = 32.5 / 2;
 petit_cote_notch = 1.5;
@@ -17,46 +47,6 @@ outer_back = 3;
 
 outer_side_front = 6;
 outer_side_back = 9;
-
-front_angle = 25;
-
-amps_large = 38; // The AMPS format is 4 holes.
-amps_small = 30;
-
-
-// Same as mirror() but duplicates the children as opposed to just move it.
-module mirrored(v) {
-  union() {
-    children();
-    mirror(v = v)
-      children();
-  } 
-}
-
-// Build a negative rounded corner to soften a square angle.
-module rounded_edge(radius, height, extra = 0) {
-  translate([radius / 2, radius / 2, 0])
-  difference() {
-    cube([radius+.01 + extra, radius+.01 +extra, height + .01], center = true);
-    translate([radius / 2, radius /2, 0])
-      cylinder(r = radius, h = height + .02, center = true, $fn = 100);
-  }
-}
-
-// Build a cube with the corners in the z plane softened.
-module rounded_cube(v, radius) {
-  difference() {
-    cube(v, center=true);
-    mirrored([0, 1, 0]) mirrored([1, 0, 0])
-      translate([-v[0]/2,-v[1]/2,0])
-        rounded_edge(radius, v[2]);
-  }
-}
-
-module cylinder_outer(height,radius,fn){
-  fudge = 1/cos(180/fn);
-  cylinder(h = height,r = radius*fudge, $fn=fn, center = true);
-}
 
 // The innerbase is what fits in the hole, snuggly, to hold everything in
 // place. This returns the polygon to exactly fits that hole as close as
@@ -76,7 +66,7 @@ module inner_base_2D() {
     ]);
 }
 
-// This is the 3D extruded version.
+// This is the 3D extruded version of the above.
 module inner_base(height = 3) {
     translate([0,0,-3])
       linear_extrude(height) inner_base_2D();
@@ -98,69 +88,10 @@ module outer_base_2D() {
     ]);
 }
 
-// Just a square extrusion of the above.
-module outer_base() {
-  linear_extrude(30) outer_base_2D();
+// This is the 3D extruded version of the above.
+module outer_base(height = 30) {
+  linear_extrude(height) outer_base_2D();
 }
-
-// The raw base
-module base() {
-	union() {
-	  outer_base();
-    inner_base();
-    screw_point();
-	}
-}
-
-// A complex way to buid the two attachements at the bottom of the piece where
-// it will be bolted to the side of the hole. This is designed to be drilled on
-// site, as it would require quite a bit of support to 3d print flat vertical
-// surfaces with holes.  Those are also inset a bit to leave space for the
-// metalic clips with captive nuts that are installed on the original cover.
-
-hole_depth = 12;
-hole_diameter = 7;
-shift_down = 2.2;
-shift_forward = -1;
-
-support_width = hole_depth;//26;
-support_length = 20;
-support_height = 23; 
-distance_from_spline = 22.5789;
-side_angle = 4.817;
-
-nudge = 12;
-
-module screw_point() {
-	difference() {
-		union() {
-		  rotate([0, 180, 0])
-		    mirrored([1, 0, 0])
-		     translate([-(distance_from_spline - support_width/2) , 0, support_height/2 -3])
-		      rotate([0, 0, -side_angle])
-		        difference () {
-		          rounded_cube([support_width, support_length, support_height], 3);
-							translate([-(support_width - hole_depth)/2 -0.001, -shift_forward, shift_down])
-							  rotate([0,90,0])
-						      cylinder(hole_depth + .01, hole_diameter/2, hole_diameter/2, center = true, $fn = 50);	
-		  }
-	
-			translate([0 , -.2, -support_height/2 +3])
-			 rounded_cube([(distance_from_spline - hole_depth)*2 + nudge, support_length, support_height], 3, center = true);
-		}
-		mirrored([0,1,0])
-		translate([0 , -support_length/2, -support_height + 3])
-	  rotate([0, 90, 0])
-		rotate([0,0,90])
-		   rounded_edge(support_length / 2, distance_from_spline * 3, extra = 0);
-		
-	 		mirrored([0,1,0])
-			translate([0 , -support_length/2-1.29, -support_height/2+3])
-			cube([distance_from_spline *3,3,support_height+.001], center = true);
-		
-	}
-}
-
 
 // This builds a rounded rectangle, rotate it to be at the right place, to be
 // used as an intersection with the big square base to make something that
@@ -177,11 +108,108 @@ module shaper(top_radius = 6) {
 }
 
 
-// This assemble the whole shape, without any holes.
-module outside_shape() {
+// ----------------------------------------------------------------------------
+// Screw attachment.
+// ----------------------------------------------------------------------------
+
+screw_support_width = screw_hole_depth;
+screw_support_length = 20;  // Those two are quite arbitrary.
+screw_support_height = 23; 
+
+// This is an approximation as I am too lazy to do the math. If the support is
+// moved forward or back this will need changing.
+distance_from_spline = 22.5789; 
+
+// The best approximation of the side angle.
+side_angle = 4.817;
+
+// To nugde the angle doing the rounded corners.
+nudge = 10;
+
+// Moves and duplicates a children element at the right place for the screw
+// support.
+module screw_support_location() {
+  rotate([0, 180, 0])
+    mirrored([1, 0, 0])
+     translate([-(distance_from_spline - screw_support_width/2) , 0, screw_support_height/2 -3])
+      rotate([0, 0, -side_angle])
+        children();
+}
+
+// A cornice to clean up the form by removing extra on the side and rounding
+// the bottom.
+module cleaning_screw_point() {
+  union () {
+    // Makes a rouded top.
+  	mirrored([0,1,0])
+  	  translate([0 , -screw_support_length/2, -screw_support_height + 3])
+        rotate([0, 90, 0])
+  	      rotate([0,0,90])
+  	        rounded_edge(screw_support_length / 2, distance_from_spline * 3, extra = 0);
+	
+    // makes perfect sides. 
+   	mirrored([0,1,0])
+  		translate([0 , -screw_support_length/2-1.29, -screw_support_height/2+3])
+  	    cube([distance_from_spline *3,3,screw_support_height+.001], center = true);
+  }
+}
+
+// Build the two screw points, connect them with a big form, and drill the
+// holes.
+module screw_point() {
+	difference() {
+		union() {
+      screw_support_location() {
+        rounded_cube([screw_support_width, screw_support_length, screw_support_height], 3);
+      }
+			translate([0 , -.2, -screw_support_height/2 +3])
+			  rounded_cube([(distance_from_spline - screw_hole_depth)*2 + nudge, screw_support_length, screw_support_height], 3, center = true);
+		}
+    cleaning_screw_point();
+    // screw_support_location() {
+    //   #screw_holes();
+    // }
+	}
+}
+
+module top_shape() {
   intersection() {
-    shaper();
-    base();
+    shaper();  
+  	union() {
+	    outer_base(height = 3);
+      inner_base();
+	  }
+  }
+}
+// The full solid form.
+module shape() {
+  union () {
+    difference() {
+      top_shape();
+      scale([.7,.7,.7])
+        top_shape();
+      translate([0,0,-3])
+        scale([.85,.85,.85])
+          inner_base(height = 6.7);
+    }
+    //screw_point();
+    amps_inserts_location()
+      amps_inserts(radius = amps_insert_radius + 2, depth_nudge = -.001);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// From here, this only digs holes for inserts
+// ----------------------------------------------------------------------------
+
+// The holes for the inserts on the side.
+module screw_holes() {
+  screw_support_location() {
+    difference () {
+  		translate([-(screw_support_width - screw_hole_depth)/2 -0.001, -screw_shift_forward, screw_shift_down])
+  		  rotate([0,90,0])
+  	      cylinder(screw_hole_depth + .01, screw_hole_radius, screw_hole_radius, center = true, $fn = 50);	
+    }
   }
 }
 
@@ -193,56 +221,51 @@ module cable_hole() {
        rounded_cube([15, 15, 20], 5);
 }
 
-// A simple screw hole, by design for 4mm screws with space for the bolt.
-module screw_hole(height, diameter = 3.4, hex_diameter = 5.85, rotation = 0) {
-  cylinder(height, diameter/2, diameter/2, center = true, $fn = 50);
-  translate([0, 0, -height/4 - height/8]) rotate([0, 0, rotation])
-    cylinder_outer(height = height/4, radius = hex_diameter/2, fn = 6);
+module amps_inserts_location() {
+rotate([front_angle, 0, 0])
+  translate([0, -3, 20])
+    children();
 }
 
-// Two symetrical screws separated by the larger AMPS size.
-module two_screws_amps(separation, height, rotation) {
-  mirrored([1,0,0])
-  translate([separation/2, 0, 0])
-    screw_hole(height = height, rotation = rotation);
-}
-
-// Two set of two screws separated by the smaller AMPS size.
-module four_amps_screws() {
-  translate([0, amps_small/2, 0])
-    two_screws_amps(separation = amps_large, height = 70, rotation = 36);
-  translate([0, -amps_small/2, 0])
-    two_screws_amps(separation = amps_large, height = 50, rotation = 36);
+// Two set of two inserts separated by the smaller AMPS size.
+module amps_inserts(radius = amps_insert_radius, depth_nudge = 0) {
+  translate([0, 3, -9.343]) union() {
+    translate([0, amps_small/2, 0])
+      mirrored([1,0,0])
+        translate([amps_large/2, 0, 0])
+          cylinder(amps_insert_depth + depth_nudge, radius , radius, center = true, $fn=100);
+    translate([0, -amps_small/2, 0])
+      mirrored([1,0,0])
+        translate([amps_large/2, 0, 0])
+          cylinder(amps_insert_depth + depth_nudge, radius, radius,center = true, $fn=100);
+      }
 }
 
 // Dig the holes in the shape.
 module shape_with_holes(back_hole) {
   difference() {
-    outside_shape();
-    rotate([front_angle, 0, 0])
-      translate([0, -3, 20])
-        four_amps_screws();
+    shape();
+    amps_inserts_location() {
+        amps_inserts();
+    }
     // Dig a hole for the cable
     if (back_hole)
       cable_hole();
+    screw_holes();
   }
 }
 
-//shape_with_holes(back_hole = true);
-
-// Adds the two attachments points to the final shape.
-module final_shape(back_hole = true) {
-  shape_with_holes(back_hole);
-  screw_point();
-}
-
+//shape();
+shape_with_holes(back_hole = true);
 
 // Rotate everything to make it ready to print from bottom to top.
 module ready_to_print() {
   translate([0,0,13.655])
   rotate([-25, 180, 0])
-  final_shape();
+  shape_with_holes();
 }
+
+//ready_to_print();
 
 module test_inner() {
   difference() {
@@ -293,7 +316,7 @@ module screw_test_print() {
 }
 
 module splitter() {
-  #translate([0,0,54]) cube([100, 100, 100], center = true);
+  translate([0,0,54]) cube([100, 100, 100], center = true);
 
 }
 
@@ -305,7 +328,7 @@ module final_shape_bottom() {
 }
 //screw_test_print();
 //test_print();
-ready_to_print();
+//ready_to_print();
 //final_shape_bottom();
 
 //outside_shape();

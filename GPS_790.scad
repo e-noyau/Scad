@@ -242,7 +242,7 @@ module two_screws_amps(separation, height, rotation) {
 }
 
 // Two set of two screws separated by the smaller AMPS size.
-module four_amps_screws(insert = true) {
+module four_amps_screws(insert = false) {
   if (insert) {
     insert_radius = 2.7;
     insert_depth = 6;
@@ -352,6 +352,6 @@ module final_shape_bottom() {
 }
 //screw_test_print();
 //test_print();
-//ready_to_print(logo = false);
-final_shape_bottom();
+ready_to_print(logo = false);
+//final_shape_bottom();
 
