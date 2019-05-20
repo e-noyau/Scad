@@ -242,11 +242,26 @@ module two_screws_amps(separation, height, rotation) {
 }
 
 // Two set of two screws separated by the smaller AMPS size.
-module four_amps_screws() {
-  translate([0, amps_small/2, 0])
-    two_screws_amps(separation = amps_large, height = 70, rotation = 36);
-  translate([0, -amps_small/2, 0])
-    two_screws_amps(separation = amps_large, height = 50, rotation = 36);
+module four_amps_screws(insert = true) {
+  if (insert) {
+    insert_radius = 2.7;
+    insert_depth = 6;
+    translate([0, 3, -9.343]) union() {
+      translate([0, amps_small/2, 0])
+        mirrored([1,0,0])
+          translate([amps_large/2, 0, 0])
+            cylinder(insert_depth, insert_radius , insert_radius, center = true, $fn=30);
+      translate([0, -amps_small/2, 0])
+        mirrored([1,0,0])
+          translate([amps_large/2, 0, 0])
+            cylinder(insert_depth, insert_radius, insert_radius,center = true, $fn=30);
+        }
+    } else {
+    translate([0, amps_small/2, 0])
+      two_screws_amps(separation = amps_large, height = 70, rotation = 36);
+    translate([0, -amps_small/2, 0])
+      two_screws_amps(separation = amps_large, height = 50, rotation = 36);
+  }
 }
 
 // Dig the holes in the shape.
@@ -325,7 +340,7 @@ module screw_test_print() {
 }
 
 module splitter() {
-  #translate([0,0,54]) cube([100, 100, 100], center = true);
+  translate([0,0,33]) cube([100, 100, 50], center = true);
 
 }
 
@@ -337,6 +352,6 @@ module final_shape_bottom() {
 }
 //screw_test_print();
 //test_print();
-ready_to_print(logo = false);
-//final_shape_bottom();
+//ready_to_print(logo = false);
+final_shape_bottom();
 

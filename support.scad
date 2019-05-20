@@ -3,7 +3,7 @@
 
 // The wire charging loop, must be as close as possible as the phone
 LoopDiameter = 42;
-LoopHeight = 1;
+LoopHeight = 1.7;
 
 // The rubber support for the loop
 LoopSupportDiameter = 50;
@@ -32,6 +32,8 @@ PostSeparation = 28 - PostDiameter;
 
 PinPostSeparation = 64.64 - PostDiameter / 2 - PinDiameter / 2;
 
+wall = 1.5;
+
 // Same as mirror() but duplicates the children as opposed to just move it.
 module mirrored(v) {
   union() {
@@ -58,7 +60,7 @@ module CircuitSimulation() {
 	PinFromCenterY = CircuitShortLength / 2 - PinFromSide;
 	PostFromCenterY = PinFromCenterY - PinPostSeparation;
 	difference() {
-    linear_extrude(1) Circuit2D();
+    linear_extrude(CircuitHeight + .01) Circuit2D();
 		mirrored([1, 0, 0]) {
 			translate([PinSeparation / 2, PinFromCenterY, 0])
 			  cylinder(r = PinDiameter / 2, h = 10 + .02, center = true, $fn = 100);
@@ -72,11 +74,26 @@ module CircuitSimulation() {
 
 module InductionSimulation() {
 	translate([0, 0, LoopSupportHeight / 2 + CircuitHeight]) union () {
-    cylinder(r = LoopSupportDiameter / 2, h = LoopSupportHeight, center = true, $fn = 100);
+    cylinder(r = LoopSupportDiameter / 2, h = LoopSupportHeight + 0.1, center = true, $fn = 200);
 		translate([0, 0, LoopSupportHeight])
-      cylinder(r = LoopDiameter / 2, h = LoopHeight, center = true, $fn = 100);
+      cylinder(r = LoopDiameter / 2, h = LoopHeight +.01, center = true, $fn = 200);
   }
 }
 
-CircuitSimulation();
-InductionSimulation();
+module inner() {
+  union() {
+    CircuitSimulation();
+    InductionSimulation();
+		translate([0, 0, CircuitHeight/ 2])
+      cylinder(r = LoopSupportDiameter / 2, h = CircuitHeight + 0.1, center = true, $fn = 200);
+  }
+}
+
+height = CircuitHeight + LoopSupportHeight + LoopHeight + wall + 0.1;
+
+difference() {
+  translate([0,0,height/2 + 0.01]) 
+    cylinder(height, 55, 55, center = true, $fn = 500);
+  inner();
+  //cube([10, 200, 200]);
+}
