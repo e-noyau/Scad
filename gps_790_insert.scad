@@ -107,6 +107,16 @@ module shaper(top_radius = 6) {
         rounded_cube([cube_l, cube_h, cube_w], top_radius);
 }
 
+// The full solid form without the bottom attachments.
+module top_shape() {
+  intersection() {
+    shaper();  
+  	union() {
+	    outer_base(height = 30);
+      inner_base();
+	  }
+  }
+}
 
 // ----------------------------------------------------------------------------
 // Screw attachment.
@@ -154,8 +164,7 @@ module cleaning_screw_point() {
   }
 }
 
-// Build the two screw points, connect them with a big form, and drill the
-// holes.
+// Build the two screw points, connect them with a big form.
 module screw_point() {
 	difference() {
 		union() {
@@ -166,33 +175,24 @@ module screw_point() {
 			  rounded_cube([(distance_from_spline - screw_hole_depth)*2 + nudge, screw_support_length, screw_support_height], 3, center = true);
 		}
     cleaning_screw_point();
-    // screw_support_location() {
-    //   #screw_holes();
-    // }
 	}
 }
 
-module top_shape() {
-  intersection() {
-    shaper();  
-  	union() {
-	    outer_base(height = 3);
-      inner_base();
-	  }
-  }
-}
-// The full solid form.
+// Assembles the fulls shape by hollowing the inside.
 module shape() {
   union () {
     difference() {
       top_shape();
+      // Make a hole in the main part of the piece
       scale([.7,.7,.7])
         top_shape();
+      // Open the bottom a bit 
       translate([0,0,-3])
         scale([.85,.85,.85])
           inner_base(height = 6.7);
     }
-    //screw_point();
+    // Add the screw support at the bottom.
+    screw_point();
     amps_inserts_location()
       amps_inserts(radius = amps_insert_radius + 2, depth_nudge = -.001);
   }
@@ -242,7 +242,7 @@ module amps_inserts(radius = amps_insert_radius, depth_nudge = 0) {
 }
 
 // Dig the holes in the shape.
-module shape_with_holes(back_hole) {
+module shape_with_holes(back_hole = true) {
   difference() {
     shape();
     amps_inserts_location() {
@@ -255,9 +255,6 @@ module shape_with_holes(back_hole) {
   }
 }
 
-//shape();
-shape_with_holes(back_hole = true);
-
 // Rotate everything to make it ready to print from bottom to top.
 module ready_to_print() {
   translate([0,0,13.655])
@@ -265,7 +262,7 @@ module ready_to_print() {
   shape_with_holes();
 }
 
-//ready_to_print();
+ready_to_print();
 
 module test_inner() {
   difference() {
