@@ -8,8 +8,8 @@ use <noyau_utils.scad>;
 
 // This is the size of the insert hole for the AMPs pattern on top. Watch out
 // for the depth, as anything longer may get accross the part completely.
-amps_insert_radius = 2.7;
-amps_insert_depth = 6;
+amps_insert_radius = 5.9/2;
+amps_insert_depth = 5.87;
 
 // This is the size of the inserts to secure the part to the bike.
 screw_hole_radius = amps_insert_radius;
@@ -178,7 +178,18 @@ module screw_point() {
 	}
 }
 
-// Assembles the fulls shape by hollowing the inside.
+// Assembles the full shape by hollowing the inside.
+module top_shape() {
+  intersection() {
+    shaper();  
+  	union() {
+	    outer_base(height = 30);
+      inner_base();
+	  }
+  }
+}
+
+// The full solid form.
 module shape() {
   union () {
     difference() {
@@ -223,37 +234,72 @@ module cable_hole() {
 
 module amps_inserts_location() {
 rotate([front_angle, 0, 0])
-  translate([0, -3, 20])
-    children();
+  translate([0, 0, 13.66])
+      children();
 }
 
-// Two set of two inserts separated by the smaller AMPS size.
-module amps_inserts(radius = amps_insert_radius, depth_nudge = 0) {
-  translate([0, 3, -9.343]) union() {
+module amps_positioning(nudge_z = 0) {
+  union() {
     translate([0, amps_small/2, 0])
       mirrored([1,0,0])
-        translate([amps_large/2, 0, 0])
-          cylinder(amps_insert_depth + depth_nudge, radius , radius, center = true, $fn=100);
+        translate([amps_large/2, 0, nudge_z])
+          children();
     translate([0, -amps_small/2, 0])
       mirrored([1,0,0])
-        translate([amps_large/2, 0, 0])
-          cylinder(amps_insert_depth + depth_nudge, radius, radius,center = true, $fn=100);
-      }
+        translate([amps_large/2, 0, nudge_z])
+				children();
+    }
+
+}
+
+module insert_holes(depth, radius, reduction_percentage = .9) {
+	inner_radius = radius * reduction_percentage;
+  mirror([0,0,1]) union() {
+    cylinder(depth, inner_radius, inner_radius, $fn=50);
+    cylinder(depth * .1, radius, radius, $fn=50);
+		translate([0,0,depth])
+		   sphere(inner_radius, $fn = 50);
+  }	
+}
+
+module insert_receptacles(depth, radius) {
+	  mirror([0,0,1]) union() {
+      cylinder(depth, radius*1.65 , radius * 1.65, $fn=50);
+			translate([0,0,depth])
+			   sphere(radius * 1.65, $fn = 50);
+		}
+}
+
+
+difference() {
+  insert_receptacles(amps_insert_depth, amps_insert_radius);
+	insert_holes(amps_insert_depth, amps_insert_radius);
+	// mirror([0,0,1])
+	//   cube([amps_large/2,amps_small,amps_insert_depth * 2]);
 }
 
 // Dig the holes in the shape.
 module shape_with_holes(back_hole = true) {
   difference() {
-    shape();
-    amps_inserts_location() {
-        amps_inserts();
-    }
+    union() {
+			shape();
+			amps_inserts_location()
+			amps_positioning(nudge_z = -.1)
+		    insert_receptacles(amps_insert_depth, amps_insert_radius);
+		}
+		amps_inserts_location()
+		amps_positioning()
+	    insert_holes(amps_insert_depth, amps_insert_radius);
+  
     // Dig a hole for the cable
     if (back_hole)
       cable_hole();
     screw_holes();
   }
 }
+
+//shape();
+//shape_with_holes(back_hole = true);
 
 // Rotate everything to make it ready to print from bottom to top.
 module ready_to_print() {
@@ -263,74 +309,3 @@ module ready_to_print() {
 }
 
 ready_to_print();
-
-module test_inner() {
-  difference() {
-    final_shape();
-    translate([0,0,35-.1])
-       cube(70, 70, 70, center = true);
-    translate([0,0,-35-5])
-       cube(70, 70, 70, center = true);
-  }
-}
-
-module test_outter() {
-  difference() {
-    final_shape(back_hole = true);
-    translate([0,0,37])
-       cube(70, 70, 70, center = true);
-    translate([0,0,-35-3-.1])
-       cube(70, 70, 70, center = true);
-  }
-}
-
-module test_print() {
-  translate([35, 0, 2])
-  rotate([0, 180, 0])
-    test_outter();
-  translate([-35, 0, 0])
-    rotate([0, 180, 0])
-      test_inner();
-}
-
-
-module screw_test_print() {
-  difference() {
-    cube([10, 40, 3], center = true);
-    rotate([180, 0, 0]) translate([0,0,3.9]){
-      translate([0,-15,0])
-        screw_hole(height = 11, hex_diameter = 6.2);
-      translate([0,-7,0])
-        screw_hole(height = 11, hex_diameter = 6.1);
-      translate([0,1,0])
-        screw_hole(height = 11, hex_diameter = 6.0);
-      translate([0,8.5,0])
-        screw_hole(height = 11, hex_diameter = 5.9);
-      translate([0,16,0])
-        screw_hole(height = 11, hex_diameter = 5.8);
-    }
-  }
-}
-
-module splitter() {
-  translate([0,0,54]) cube([100, 100, 100], center = true);
-
-}
-
-module final_shape_bottom() {
-  difference() {
-    final_shape(back_hole = false);
-    splitter();
-  }
-}
-//screw_test_print();
-//test_print();
-//ready_to_print();
-//final_shape_bottom();
-
-//outside_shape();
-
-//translate([23,0,12])
-//rotate([front_angle, 0,side_angle])
-//translate([0,2,1.5])
-//#cube([24, 27, 12]);
