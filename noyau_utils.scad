@@ -11,9 +11,9 @@ module mirrored(v) {
 module rounded_edge(radius, height, extra = 0) {
   translate([radius / 2, radius / 2, 0])
   difference() {
-    cube([radius+.01 + extra, radius + .01 + extra, height + .01], center = true);
+    cube([radius+.01 + extra, radius +.01 + extra, height + .01], center = true);
     translate([radius / 2, radius /2, 0])
-      cylinder(r = radius, h = height + .02, center = true, $fn = 100);
+      cylinder(r = radius, h = height + .02, center = true);
   }
 }
 
@@ -27,7 +27,7 @@ module rounded_cube(v, radius) {
   }
 }
 
-module cylinder_outer(height,radius,fn){
+module cylinder_outer(height,radius){
   fudge = 1/cos(180/fn);
-  cylinder(h = height,r = radius*fudge, $fn=fn, center = true);
+  cylinder(h = height,r = radius*fudge, center = true);
 }
