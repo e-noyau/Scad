@@ -14,11 +14,11 @@ amps_insert_depth = 5.87;
 
 // This is the size of the inserts to secure the part to the bike.
 screw_hole_radius = 7/2;
-screw_hole_depth = 6.2;  // way too small, should be 14
+screw_hole_depth = 10;
 
 // Used to nudge the hole a bit to get it in perfect alignment.
-screw_shift_down = 2.2;
-screw_shift_forward = -1;
+screw_shift_down = 9; // Distance from the plane
+screw_shift_forward = 0;
 
 // The angle of the piece from the top of the hole. This is tha same angle as
 // the original part shipped with the bike.
@@ -116,8 +116,7 @@ module shaper(top_radius = 6) {
 // ----------------------------------------------------------------------------
 
 screw_support_width = screw_hole_depth;
-screw_support_length = 20;  // Those two are quite arbitrary.
-screw_support_height = 23;
+screw_support_height = 50;
 
 // This is an approximation as I am too lazy to do the math. If the support is
 // moved forward or back this will need changing.
@@ -134,11 +133,16 @@ nudge = 10;
 module screw_support_location() {
   rotate([0, 180, 0])
     mirrored([1, 0, 0])
-     translate([-(distance_from_spline - screw_support_width/2), 0, screw_support_height/2 -3])
+     translate([-distance_from_spline, screw_shift_forward, screw_hole_radius - 4 + screw_shift_down])
       rotate([0, 0, -side_angle])
         children();
 }
-
+/* Helps mesasure.
+screw_support_location()
+rotate([-front_angle, 0, 0])
+translate([-2.5,21.3,-24.4])
+#cube([5,24,9], center =true);
+*/
 // Assembles the full shape by hollowing the inside.
 module top_shape() {
   intersection() {
@@ -187,22 +191,24 @@ module cable_hole() {
 // expansion set the amount of plastic that will be around the hole. Note that
 // there is an empty space at the bottom to collect the material that is going
 // to melt in during installation.
-module insert_receptacle(depth, radius, expand = 1.65) {
+module insert_receptacle(depth, radius, expand = 1.65, open = false) {
     mirror([0,0,1]) union() {
       cylinder(depth, radius * expand , radius * expand);
-      translate([0,0,depth])
-         sphere(radius * expand);
+      if (!open) {
+        translate([0,0,depth])
+          sphere(radius * expand);
+      }
     }
 }
 
-module insert_receptacle_with_support(depth, radius, support_height, expand = 1.65) {
+module insert_receptacle_with_support(depth, radius, support_height, expand = 1.65, open = false) {
   rotate([0,0,-90]) {
   translate([0,0, -(depth+radius)/2]) rotate([-90, 0, 0]) translate([0,0,-support_height])
     linear_extrude(support_height)
     projection(cut=false)
       translate([0,0,support_height]) rotate([90, 0, 0]) translate([0,0, (depth+radius)/2])
-            insert_receptacle(depth, radius, expand);
-  insert_receptacle(depth, radius, expand);
+            insert_receptacle(depth, radius, expand, open);
+  insert_receptacle(depth, radius, expand, open);
   }
 }
 
@@ -244,7 +250,6 @@ module amps_positioning(nudge_z = 0) {
 }
 
 module screw_support_positioning(nudge = 0) {
-  translate([-(screw_support_width - screw_hole_depth)/2 -3.135- nudge, -screw_shift_forward, screw_shift_down])
     rotate([0,-90,0])
       children();
 }
@@ -258,11 +263,11 @@ module shape_with_holes(back_hole = true, amps_inserts = true) {
       shape();
       if (amps_inserts)
         amps_inserts_location()
-          amps_positioning(nudge_z = -.1)
+          amps_positioning()
             insert_receptacle(amps_insert_depth, amps_insert_radius);
       screw_support_location()
         screw_support_positioning() {
-          insert_receptacle_with_support(screw_hole_depth, screw_hole_radius, 30);
+          insert_receptacle_with_support(screw_hole_depth, screw_hole_radius, 30, open = true);
           translate([-4.3,0,0])
             rotate([0,180,-90])
               Triangle(23, spline_length -9, 28, height = 2.25, centerXYZ = [true, true, false]);
@@ -274,7 +279,7 @@ module shape_with_holes(back_hole = true, amps_inserts = true) {
         amps_positioning()
           insert_holes(amps_insert_depth, amps_insert_radius);
     screw_support_location()
-      screw_support_positioning(nudge = .01)
+      screw_support_positioning() translate([0,0,0.01])
         insert_holes(screw_hole_depth, screw_hole_radius);
 
     // Dig a hole for the cable
