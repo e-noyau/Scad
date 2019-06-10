@@ -9,11 +9,11 @@ use <triangles.scad>;
 
 // This is the size of the insert hole for the AMPs pattern on top. Watch out
 // for the depth, as anything longer may get accross the part completely.
-amps_insert_radius = 5.9/2;
+amps_insert_radius = 5.9 / 2;
 amps_insert_depth = 5.87;
 
 // This is the size of the inserts to secure the part to the bike.
-screw_hole_radius = 7/2;
+screw_hole_radius = 7 / 2;
 screw_hole_depth = 10;
 
 // Used to nudge the hole a bit to get it in perfect alignment.
@@ -72,7 +72,7 @@ module inner_base_2D() {
 // This is the 3D extruded version of the above.
 module inner_base(height = 3) {
   union() {
-    translate([0,0,-3])
+    translate([0, 0, -3])
       linear_extrude(height) inner_base_2D();
   }
 }
@@ -87,8 +87,10 @@ module outer_base_2D() {
       [0, -spline_length / 2 - outer_front],
       [0, spline_length / 2 + outer_back],
       [petit_cote + outer_side_back, spline_length / 2 + outer_back],
-      [grand_cote + outer_side_front, -spline_length / 2 + grand_cote_slip + angle_grind - outer_front],
-      [grand_cote + outer_side_front - angle_grind, -spline_length / 2 + grand_cote_slip - outer_front]
+      [grand_cote + outer_side_front,
+             -spline_length / 2 + grand_cote_slip + angle_grind - outer_front],
+      [grand_cote + outer_side_front - angle_grind,
+             -spline_length / 2 + grand_cote_slip - outer_front]
     ]);
 }
 
@@ -105,7 +107,7 @@ module shaper(top_radius = 6) {
   cube_w = spline_length + outer_front + outer_back + 15;
   cube_h = 40;
 
-  translate([0,0, -7])
+  translate([0, 0, -7])
     rotate([front_angle, 0, 0])
       rotate([90, 0, 90])
         rounded_cube([cube_l, cube_h, cube_w], top_radius);
@@ -116,24 +118,23 @@ module shaper(top_radius = 6) {
 // ----------------------------------------------------------------------------
 
 screw_support_width = screw_hole_depth;
-screw_support_height = 50;
+screw_support_height = 50;  // Something big, it is clipped anyway.
 
 // This is an approximation as I am too lazy to do the math. If the support is
 // moved forward or back this will need changing.
-distance_from_spline = 22.5789;
+distance_from_spline = 22.6289;
 
 // The best approximation of the side angle.
 side_angle = 4.817;
-
-// To nugde the angle doing the rounded corners.
-nudge = 10;
 
 // Moves and duplicates a children element at the right place for the screw
 // support.
 module screw_support_location() {
   rotate([0, 180, 0])
     mirrored([1, 0, 0])
-     translate([-distance_from_spline, screw_shift_forward, screw_hole_radius - 4 + screw_shift_down])
+     translate([-distance_from_spline, 
+                screw_shift_forward,
+                screw_hole_radius - 4 + screw_shift_down])
       rotate([0, 0, -side_angle])
         children();
 }
@@ -143,7 +144,8 @@ rotate([-front_angle, 0, 0])
 translate([-2.5,21.3,-24.4])
 #cube([5,24,9], center =true);
 */
-// Assembles the full shape by hollowing the inside.
+
+// Assembles the full shape.
 module top_shape() {
   intersection() {
     shaper();
@@ -154,18 +156,18 @@ module top_shape() {
   }
 }
 
-// The full solid form.
+// The full solid form by hollowing the main shape.
 module shape() {
   inside_scale = .735;
   union () {
     difference() {
       top_shape();
       // Make a hole in the main part of the piece
-      scale([inside_scale,inside_scale,inside_scale])
+      scale([inside_scale, inside_scale, inside_scale])
         top_shape();
       // Open the bottom a bit
-      translate([0,0,-3])
-        scale([.90,.90,.90])
+      translate([0, 0, -3])
+        scale([.90, .90, .90])
           inner_base(height = 6.7);
     }
   }
@@ -178,7 +180,7 @@ module shape() {
 // A model of the hole at the back of the piece to allow the cable to go in.
 module cable_hole() {
   // Dig a hole for the cable
-   translate([0,spline_length/2,0])
+   translate([0, spline_length/2, 0])
       rotate([-45, 0, 0])
        rounded_cube([15, 15, 20], 5);
 }
@@ -191,47 +193,47 @@ module cable_hole() {
 // expansion set the amount of plastic that will be around the hole. Note that
 // there is an empty space at the bottom to collect the material that is going
 // to melt in during installation.
+// The receptacle could be optionaly open, for a through screw.
 module insert_receptacle(depth, radius, expand = 1.65, open = false) {
-    mirror([0,0,1]) union() {
+    mirror([0, 0, 1]) union() {
       cylinder(depth, radius * expand , radius * expand);
       if (!open) {
-        translate([0,0,depth])
+        translate([0, 0, depth])
           sphere(radius * expand);
       }
     }
 }
 
-module insert_receptacle_with_support(depth, radius, support_height, expand = 1.65, open = false) {
-  rotate([0,0,-90]) {
-  translate([0,0, -(depth+radius)/2]) rotate([-90, 0, 0]) translate([0,0,-support_height])
-    linear_extrude(support_height)
-    projection(cut=false)
-      translate([0,0,support_height]) rotate([90, 0, 0]) translate([0,0, (depth+radius)/2])
-            insert_receptacle(depth, radius, expand, open);
+// Same as the above but with a support of support_height size.
+module insert_receptacle_with_support(
+    depth, radius, support_height, expand = 1.65, open = false) {
   insert_receptacle(depth, radius, expand, open);
+  rotate([0,0,-90]) {
+    translate([0, 0, -(depth+radius)/2]) rotate([-90, 0, 0])
+      translate([0, 0, -support_height])
+        linear_extrude(support_height) projection(cut=false)
+          translate([0, 0, support_height]) rotate([90, 0, 0])
+            translate([0, 0, (depth+radius)/2])
+              insert_receptacle(depth, radius, expand, open);
   }
 }
-
-//insert_receptacle_with_support(10, 5, support_height = 20, project = true);
 
 // Drill a hole in a receptacle for an insert. The radius is the radius of the
 // insert, the reduction percentage controls the amount of plastic that will be
 // displaced during install.
 module insert_holes(depth, radius, reduction_percentage = .9) {
   inner_radius = radius * reduction_percentage;
-  mirror([0,0,1]) union() {
+  mirror([0, 0, 1]) union() {
     cylinder(depth, inner_radius, inner_radius);
     cylinder(depth * .1, radius, radius);
-    translate([0,0,depth])
-       sphere(inner_radius);
+    translate([0, 0, depth]) sphere(inner_radius);
   }
 }
 
-
 // Position the AMPS inserts to the face of the piece.
 module amps_inserts_location() {
-rotate([front_angle, 0, 0])
-  translate([0, 0, 13.66])
+  rotate([front_angle, 0, 0])
+    translate([0, 0, 13.66])
       children();
 }
 
@@ -239,38 +241,37 @@ rotate([front_angle, 0, 0])
 module amps_positioning(nudge_z = 0) {
   union() {
     translate([0, amps_small/2, 0])
-      mirrored([1,0,0])
+      mirrored([1, 0, 0])
         translate([amps_large/2, 0, nudge_z])
           children();
     translate([0, -amps_small/2, 0])
-      mirrored([1,0,0])
+      mirrored([1, 0, 0])
         translate([amps_large/2, 0, nudge_z])
-        children();
+          children();
     }
 }
 
-module screw_support_positioning(nudge = 0) {
-    rotate([0,-90,0])
-      children();
-}
-
-// Dig the holes in the shape.
+// Dig the holes in the shape. Note that the shaper is invoked again to clear
+// the remnants of recpetacle sticking out.
 module shape_with_holes(back_hole = true, amps_inserts = true) {
   difference() {
     intersection() {
       shaper();
-    union() {
-      shape();
-      if (amps_inserts)
-        amps_inserts_location()
-          amps_positioning()
-            insert_receptacle(amps_insert_depth, amps_insert_radius);
-      screw_support_location()
-        screw_support_positioning() {
-          insert_receptacle_with_support(screw_hole_depth, screw_hole_radius, 30, open = true);
-          translate([-4.3,0,0])
-            rotate([0,180,-90])
-              Triangle(23, spline_length -9, 28, height = 2.25, centerXYZ = [true, true, false]);
+      union() {
+        shape();
+        if (amps_inserts)
+          amps_inserts_location()
+            amps_positioning()
+              insert_receptacle(amps_insert_depth, amps_insert_radius);
+        screw_support_location() {
+          rotate([0, -90, 0]) {
+            insert_receptacle_with_support(
+                 screw_hole_depth, screw_hole_radius, 30, open = true);
+            translate([-4.3,0,0])
+              rotate([0,180,-90])
+                Triangle(23, spline_length -9, 28,
+                         height = 2.25, centerXYZ = [true, true, false]);
+          }
         }
       }
     }
@@ -279,7 +280,7 @@ module shape_with_holes(back_hole = true, amps_inserts = true) {
         amps_positioning()
           insert_holes(amps_insert_depth, amps_insert_radius);
     screw_support_location()
-      screw_support_positioning() translate([0,0,0.01])
+      rotate([0, -90, 0]) translate([0, 0, 0.01])
         insert_holes(screw_hole_depth, screw_hole_radius);
 
     // Dig a hole for the cable
@@ -287,11 +288,6 @@ module shape_with_holes(back_hole = true, amps_inserts = true) {
       cable_hole();
   }
 }
-
-//shape();
-
-//shape_with_holes(back_hole = true);
-
 
 // Rotate everything to make it ready to print from bottom to top.
 module ready_to_print() {
