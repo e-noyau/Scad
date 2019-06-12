@@ -17,7 +17,7 @@ screw_hole_radius = 7 / 2;
 screw_hole_depth = 10;
 
 // Used to nudge the hole a bit to get it in perfect alignment.
-screw_shift_down = 9; // Distance from the plane
+screw_shift_down = 11; // Distance from the plane
 screw_shift_forward = 0;
 
 // The angle of the piece from the top of the hole. This is tha same angle as
@@ -206,7 +206,7 @@ module insert_receptacle(depth, radius, expand = 1.65, open = false) {
 
 // Same as the above but with a support of support_height size.
 module insert_receptacle_with_support(
-    depth, radius, support_height, expand = 1.65, open = false) {
+    depth, radius, support_height, expand = 1.70, open = false) {
   insert_receptacle(depth, radius, expand, open);
   rotate([0,0,-90]) {
     translate([0, 0, -(depth+radius)/2]) rotate([-90, 0, 0])
@@ -225,7 +225,7 @@ module insert_holes(depth, radius, reduction_percentage = .9) {
   inner_radius = radius * reduction_percentage;
   mirror([0, 0, 1]) union() {
     cylinder(depth, inner_radius, inner_radius);
-    cylinder(depth * .1, radius, radius);
+    cylinder(depth * .1, radius * 1.1, radius * 1.1);
     translate([0, 0, depth]) sphere(inner_radius);
   }
 }
@@ -267,9 +267,9 @@ module shape_with_holes(back_hole = true, amps_inserts = true) {
           rotate([0, -90, 0]) {
             insert_receptacle_with_support(
                  screw_hole_depth, screw_hole_radius, 30, open = true);
-            translate([-4.3,0,0])
+            translate([-4,0,0])
               rotate([0,180,-90])
-                Triangle(23, spline_length -9, 28,
+                Triangle(25.5, spline_length -9, 34,
                          height = 2.25, centerXYZ = [true, true, false]);
           }
         }
