@@ -10,7 +10,7 @@ use <triangles.scad>;
 // This is the size of the insert hole for the AMPs pattern on top. Watch out
 // for the depth, as anything longer may get accross the part completely.
 amps_insert_radius = 5.9 / 2;
-amps_insert_depth = 5.87;
+amps_insert_depth = 10;
 
 // This is the size of the inserts to secure the part to the bike.
 screw_hole_radius = 7 / 2;
@@ -69,11 +69,19 @@ module inner_base_2D() {
     ]);
 }
 
-// This is the 3D extruded version of the above.
-module inner_base(height = 3) {
-  union() {
+// This is the 3D extruded version of the above. With small indent in the back
+// to leave space for the windshield plug.
+module inner_base(height = 3, back_passage = true) {
+  difference() {
     translate([0, 0, -3])
       linear_extrude(height) inner_base_2D();
+    if (back_passage) {
+      mirrored([1,0,0])
+        translate([10.75, 23, -2.8])
+          rotate([90,0,0])
+            cube([8, 4 , 7], center = true);
+    }
+    
   }
 }
 
@@ -96,7 +104,12 @@ module outer_base_2D() {
 
 // This is the 3D extruded version of the above.
 module outer_base(height = 30) {
-  linear_extrude(height) outer_base_2D();
+  difference() {
+    linear_extrude(height) outer_base_2D();
+    mirrored([1, 0, 0])
+    translate([petit_cote + 4.5, spline_length / 2 + outer_back,  0])
+      cube([3, 3, 30], center = true);
+  }
 }
 
 // This builds a rounded rectangle, rotate it to be at the right place, to be
@@ -168,7 +181,7 @@ module shape() {
       // Open the bottom a bit
       translate([0, 0, -3])
         scale([.90, .90, .90])
-          inner_base(height = 6.7);
+          inner_base(height = 6.7, back_passage = false);
     }
   }
 }
