@@ -102,7 +102,8 @@ module outer_base_2D() {
     ]);
 }
 
-// This is the 3D extruded version of the above.
+// This is the 3D extruded version of the above. With two small indents for the
+// windshield
 module outer_base(height = 30) {
   difference() {
     linear_extrude(height) outer_base_2D();
