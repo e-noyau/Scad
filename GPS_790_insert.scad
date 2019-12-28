@@ -81,7 +81,7 @@ module inner_base(height = 3, back_passage = true) {
           rotate([90,0,0])
             cube([8, 4 , 7], center = true);
     }
-    
+
   }
 }
 
@@ -146,7 +146,7 @@ side_angle = 4.817;
 module screw_support_location() {
   rotate([0, 180, 0])
     mirrored([1, 0, 0])
-     translate([-distance_from_spline, 
+     translate([-distance_from_spline,
                 screw_shift_forward,
                 screw_hole_radius - 4 + screw_shift_down])
       rotate([0, 0, -side_angle])
@@ -220,7 +220,7 @@ module insert_receptacle(depth, radius, expand = 1.65, open = false) {
 
 // Same as the above but with a support of support_height size.
 module insert_receptacle_with_support(
-    depth, radius, support_height, expand = 1.70, open = false) {
+    depth, radius, support_height, expand = 2, open = false) {
   insert_receptacle(depth, radius, expand, open);
   rotate([0,0,-90]) {
     translate([0, 0, -(depth+radius)/2]) rotate([-90, 0, 0])
