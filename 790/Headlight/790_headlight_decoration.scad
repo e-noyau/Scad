@@ -1,7 +1,7 @@
 // A replacement for the plastic cover on the bar right below the windshield on
 // a KTM 790 Adventure..
 
-use <noyau_utils.scad>;
+use <noyau/utils.scad>;
 
 bottom_width = 16.30;
 bottom_width_inside = 11.40;

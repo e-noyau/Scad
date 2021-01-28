@@ -2,6 +2,7 @@
 Triangles.scad
  Author: Tim Koopman
  https://github.com/tkoopman/Delta-Diamond/blob/master/OpenSCAD/Triangles.scad
+ [Edit: https://www.thingiverse.com/thing:220868/files]
 
          angleCA
            /|\
