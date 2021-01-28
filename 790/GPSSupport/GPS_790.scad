@@ -352,6 +352,6 @@ module final_shape_bottom() {
 }
 //screw_test_print();
 //test_print();
-ready_to_print(logo = false);
+ready_to_print(logo = true);
 //final_shape_bottom();
 

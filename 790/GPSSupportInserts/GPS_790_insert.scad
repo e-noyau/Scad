@@ -4,8 +4,8 @@
 
 // This version is designed for metallic inserts. It needs six inserts, four
 // for the AMPS pattern on top, two to secure the part to the bike.
-use <noyau_utils.scad>;
-use <triangles.scad>;
+use <noyau/utils.scad>;
+use <triangles/triangles.scad>;
 
 // This is the size of the insert hole for the AMPs pattern on top. Watch out
 // for the depth, as anything longer may get accross the part completely.

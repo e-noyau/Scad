@@ -48,8 +48,8 @@ height = 28;
 length = 71;
 width = 54;
 
-profile(length, height, 1/$t);
+//profile(length, height, 1/$t);
 //source_block(length, width, height);
 
 
-//#non_working_sample();
+#non_working_sample();
