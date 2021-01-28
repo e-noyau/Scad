@@ -1,0 +1,9 @@
+[submodule "BOSL"]
+	path = libraries/BOSL
+	url = git@github.com:revarbat/BOSL.git
+[submodule "openscad-model-library"]
+	path = libraries/openscad-model-library
+	url = git@github.com:cznewt/openscad-model-library.git
+[submodule "BOSL2"]
+	path = libraries/BOSL2
+	url = git@github.com:revarbat/BOSL2.git

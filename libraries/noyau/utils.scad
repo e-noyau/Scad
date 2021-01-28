@@ -1,4 +1,18 @@
 
+// Some random colors
+module plastic()   { color([  1,  .7,   0]) children(); }
+module gray()      { color([ .4,  .4,  .4]) children(); }
+module black()     { color([ .3,  .3,  .3]) children(); }
+module orange()    { color([  1,  .7,   0]) children(); }
+module yellow()    { color([ .7,  .7,  .3]) children(); }
+module green_pcb() { color([ .0,  .5, .25]) children(); }
+module metal()     { color([ .7,  .7,  .7]) children(); }
+module gold()      { color([ .8,  .5,  .0]) children(); }
+module stainless() { color([.45, .43,  .5]) children(); }
+module steel()     { color([.65, .67, .72]) children(); }
+module iron()      { color([.36, .33, .33]) children(); }
+module plastic()   { color([  1,  .7,   0]) children(); }
+
 // Same as mirror() but duplicates the children as opposed to just moving them.
 module mirrored(v) {
   union() {
@@ -52,3 +66,5 @@ mirrored([1, 0, 0]) translate([-20, -20, 0])difference() {
   cylinder_outer(5, 12, $fn = 6);
   cylinder(h = 6, r = 12, center = true);
 }
+
+
