@@ -96,12 +96,12 @@ module barrel_screw() {
 }
 
 module barrel_nut() {
-  right(screw_pitch) difference() { 
+  right(screw_pitch*.5) difference() { 
     yrot(90)
       Threading(D=barrel_ext_dia, d = hole_dia - hole_clearance + screw_slop,
-                windings = barrel_in/screw_pitch-1, pitch=screw_pitch,
+                windings = barrel_in/screw_pitch*.9, pitch=screw_pitch,
                 angle=screw_angle);
-    xrot_copies(n=24) back(barrel_ext_dia/2) cyl(h = barrel_in, d = 1.5, orient = LEFT, $fn=12);
+    xrot_copies(n=24) back(barrel_ext_dia/2) cyl(h = barrel_in*2, d = 1.5, orient = LEFT, $fn=12);
   }
 }
 
@@ -109,10 +109,10 @@ module barrel_nut() {
 
 // The knob to turn the lock includes the axis.
 module knob() {
-  left(barrel_out * 1.5) union() {
-    cyl(h = barrel_in + barrel_out * 1.5 +5, 
+  left(barrel_out * 1.5) difference() {
+    cyl(h = barrel_in + barrel_out * 1.5 + 3.7, 
       d = barrel_hole_dia-printer_slop*2, circum = false, orient = RIGHT, anchor=DOWN);
-      let($negative = false) clip();
+      up(printer_slop) right(barrel_out * 1.5 +barrel_in) cuboid([50,50,50], anchor = DOWN+LEFT);
     }
   difference() {
     left(barrel_out/2) cyl(h = barrel_out * 2 , d = barrel_ext_dia + 5, circum = true, orient = LEFT, anchor = DOWN);
@@ -123,31 +123,37 @@ module knob() {
 
 // The latch clips at the end of the axis.
 module latch() {
-
-  latch_radius = 10; // latch circle
+  //35
+  latch_radius = 8; // latch circle
   axis_radius = barrel_ext_dia / 2; // center circle
-  spread = 30; // Distance betweent the two circles
+  spread = 30 - axis_radius; // Distance between the two circles
   cutout_radius = 25;
 
   module body() {
-    linear_extrude(height = 3) hull() {
-       circle(r=axis_radius);
-       translate([0, spread, 0])
-         circle( r=latch_radius );
+    difference () {
+      linear_extrude(height = 3)
+        hull() {
+          circle(r=axis_radius);
+          translate([0, spread, 0]) circle( r=latch_radius );
+        }
+      difference () {      
+        cyl(h = 50, d = barrel_hole_dia, circum = true, orient = UP);
+        right(.25) cuboid([50, 50, 50], orient = UP, anchor=RIGHT);
+      }
     }
   }
 
-   right(barrel_in+printer_slop*3) yrot(90) union() {
+  right(barrel_in+printer_slop*3) yrot(90) union() {
      body();
-     
+ 
      bump = latch_radius * 1.5;
-     inset = 3;
+     inset = 2.7;
      translate([0, spread, bump - inset])
      difference() {
        sphere(r=bump);
        translate([0,0,inset + .1]) cuboid([bump *2, bump*2 , bump* 2]);
      };
- } 
+  } 
  
 }
 
@@ -170,12 +176,12 @@ module sliced_assembly() {
 
 
 module ready_to_print() {
-  up(barrel_out) left(12)  yrot(-90) barrel_screw();
-  down(screw_pitch) right(12)  yrot(-90) barrel_nut();
-  up(barrel_out * 2.5) back(25) yrot(-90) knob();
+  //up(barrel_out) left(12)  yrot(-90) barrel_screw();
+  //down(screw_pitch) right(12)  yrot(-90) barrel_nut();
+  //up(barrel_out * 2.5) back(25) yrot(-90) knob();
   right(40) yrot(90) left(barrel_in+printer_slop*3 + 3) latch();
 }
 
-sliced_assembly();
+//sliced_assembly();
 //assembly();
 left(100) ready_to_print();
