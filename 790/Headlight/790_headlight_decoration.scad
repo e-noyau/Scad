@@ -41,7 +41,7 @@ module deep_body() {
   difference() {
     body();
 
-    translate([0,0,2]) linear_extrude(5) #polygon([
+    #translate([0,0,1]) linear_extrude(5) #polygon([
       [2, -bottom_width/2 + 2], 
       [2, bottom_width/2 - 2], 
       [length-2, bottom_width_inside/2 - 2 ], 
