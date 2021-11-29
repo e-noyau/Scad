@@ -11,7 +11,6 @@ module gold()      { color([ .8,  .5,  .0]) children(); }
 module stainless() { color([.45, .43,  .5]) children(); }
 module steel()     { color([.65, .67, .72]) children(); }
 module iron()      { color([.36, .33, .33]) children(); }
-module plastic()   { color([  1,  .7,   0]) children(); }
 
 // Same as mirror() but duplicates the children as opposed to just moving them.
 module mirrored(v) {
