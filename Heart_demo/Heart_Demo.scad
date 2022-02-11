@@ -23,8 +23,8 @@ module option_1() {
 
 module option_2() {
   distribute(spacing=40, dir=RIGHT) {
-     heart("Eric");
-     heart("bob");
+     heart("Éric");
+     heart("Bob");
      heart("Ali");
   }
 }
