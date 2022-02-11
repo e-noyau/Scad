@@ -1,19 +1,29 @@
 include <BOSL2/std.scad>
 
-size = 20;
-
-module heart(name) {
-    fwd(15) zrot(45) linear_extrude(height = 1) union() {
-      square(size);
-      translate([size/2, size, 0])
-          circle(size/2);
-
-      translate([size, size/2, 0])
-          circle(size/2);
-    }
-    linear_extrude(height = 3)
-        text(name, halign="center", size=7, font= "Comic Sans MS");
+module 2d_heart(size) {
+  half = size/2;
+  zrot(-45) {
+    square(size, center=true);
+    mirror_copy([1,1,0]) translate([0, half, 0]) circle(half);
+  }
 }
+
+module 2d_heart_border(size) {
+  difference() {
+    2d_heart(size);
+    2d_heart(size-1);
+  }
+}
+
+module heart(name, size = 20) {
+  linear_extrude(height = 1)
+    2d_heart(size);
+  linear_extrude(height = 2) {
+    text(name, halign="center", size=7, font= "Comic Sans MS");
+    2d_heart_border(size);
+  }
+}
+
 
 module option_1() {
   names = ["Éric", "Bob", "Ali"];
@@ -22,12 +32,12 @@ module option_1() {
 }
 
 module option_2() {
-  distribute(spacing=40, dir=RIGHT) {
+  xdistribute(spacing=40) {
      heart("Éric");
      heart("Bob");
      heart("Ali");
   }
 }
 
-option_1();
-fwd(40) option_2();
+fwd(40) option_1();
+option_2();
