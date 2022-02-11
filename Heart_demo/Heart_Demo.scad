@@ -1,5 +1,8 @@
 include <BOSL2/std.scad>
 
+module black()     { color([ .3,  .3,  .3]) children(); }
+module orange()    { color([  1,  .7,   0]) children(); }
+
 module 2d_heart(size) {
   half = size/2;
   fwd(5) zrot(-45) {
@@ -16,9 +19,9 @@ module 2d_heart_border(size) {
 }
 
 module heart(name, size = 20, textsize = 7) {
-  linear_extrude(height = 1)
+  black() linear_extrude(height = 1)
     2d_heart(size);
-  linear_extrude(height = 2) {
+  orange() linear_extrude(height = 2) {
     text(name, halign="center", valign="center", size=textsize, font= "Comic Sans MS");
     2d_heart_border(size);
   }
@@ -35,7 +38,7 @@ module option_2() {
      heart("Éric");
      heart("Bob");
      heart("Ali");
-     heart("Dominique", textsize=4);
+     heart("Dominique", textsize=4.5);
   }
 }
 
