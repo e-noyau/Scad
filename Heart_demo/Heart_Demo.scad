@@ -1,8 +1,10 @@
 include <BOSL2/std.scad>
 
-module black()     { color([ .3,  .3,  .3]) children(); }
-module orange()    { color([  1,  .7,   0]) children(); }
+// To make things more visible in openscad.
+module black()  { color([.3, .3, .3]) children(); }
+module orange() { color([ 1, .7,  0]) children(); }
 
+// Quick way to make a heart
 module 2d_heart(size) {
   half = size/2;
   fwd(5) zrot(-45) {
@@ -11,6 +13,7 @@ module 2d_heart(size) {
   }
 }
 
+// To make a small border around the heart
 module 2d_heart_border(size) {
   difference() {
     2d_heart(size);
@@ -18,6 +21,7 @@ module 2d_heart_border(size) {
   }
 }
 
+// Make a heart with the name printed on it. Finetune the text size for the text to fit.
 module heart(name, size = 20, textsize = 7) {
   black() linear_extrude(height = 1)
     2d_heart(size);
@@ -27,6 +31,8 @@ module heart(name, size = 20, textsize = 7) {
   }
 }
 
+// Build and arrange the badges for a set of names using a for loop. The inconvenient is that the
+// text size must be tuned to the largest first name. 
 module option_1() {
   names = [
     "Marie", "Thomas", "Camille", "Nicolas", "Léa", "Julien", "Manon", "Quentin", "Chloé",
@@ -37,6 +43,7 @@ module option_1() {
     right(floor(i/5)*40) back(i%5*40) heart(names[i], textsize=4.5);
 }
 
+// Use BOSL2 distribution methods, which are unfortunately incompatible with a for loop.
 module option_2() {
   xdistribute(spacing=30) {
     ydistribute(spacing=40) {
