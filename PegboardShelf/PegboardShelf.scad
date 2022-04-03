@@ -1,10 +1,12 @@
 include <BOSL2/std.scad>
+use <noyau/utils.scad>
 
-preview = false;
+preview = true;
 
 HEIGHT = 60;
 PLANK_WIDTH = 50;
 PLANK_DEPTH = 4;
+PLANK_LENGTH = 100;
 MARGIN = 6;
 DEPTH = 7;
 
@@ -29,7 +31,7 @@ module right_triangle(side1,side2,corner_radius,triangle_height, hole) {
 }
 
 module hook() {
-  back(2) up(PLANK_DEPTH+MARGIN) zrot(90) xrot(90)
+  metal() back(2) up(PLANK_DEPTH+MARGIN) zrot(90) xrot(90)
   import("Pegboard_Hook.stl");
 }
 
@@ -40,7 +42,7 @@ module fake_hook() {
   zrot(HOOK_ANGLE) yrot(90) cyl(d=4, h=50);
 }
 
-module side() {
+module side(sliced=false) {
   $fn = 50;
   yrot(-90) difference() {
     right_triangle(HEIGHT,WIDTH,3,DEPTH, PLANK_DEPTH + MARGIN);
@@ -48,16 +50,29 @@ module side() {
         cuboid([PLANK_DEPTH, PLANK_WIDTH, DEPTH * 2], anchor=LEFT+FRONT);
     back(2) right(PLANK_DEPTH+MARGIN) fake_hook();
     right(HEIGHT/2) cyl(d=HEIGHT/3, h=DEPTH*2);
-    if (preview)
+    if (sliced)
       cuboid([200, 200, 50], anchor=TOP);
   }
 }
 
-
+module plank() {
+  steel() {
+  back(MARGIN) cuboid([PLANK_LENGTH+DEPTH*3,PLANK_WIDTH,PLANK_DEPTH], anchor=BOTTOM+FRONT);
+  cuboid([PLANK_LENGTH-MARGIN-2,PLANK_WIDTH+MARGIN*2,PLANK_DEPTH], anchor=BOTTOM+FRONT);
+  }
+}
 
 if (preview) {
-  side();
-  #hook();
+  fwd(PLANK_WIDTH*2) union() {
+    side(sliced = true);
+    hook();
+  }
+  mirror_copy([1,0,0]) left(PLANK_LENGTH/2) {
+    side();
+    hook();
+  }
+  up(MARGIN) plank();
+  down(HEIGHT/2) plank();
 } else {
   yrot(90) side();
 }
