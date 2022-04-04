@@ -1,7 +1,7 @@
 include <BOSL2/std.scad>
 use <noyau/utils.scad>
 
-preview = false;
+preview = true;
 
 HEIGHT = 60;
 PLANK_WIDTH = 50;
@@ -66,7 +66,7 @@ module plank() {
 if (preview) {
   fwd(PLANK_WIDTH*2) union() {
     side(sliced = true);
-    //hook();
+    hook();
   }
   mirror_copy([1,0,0]) left(PLANK_LENGTH/2) {
     side();
