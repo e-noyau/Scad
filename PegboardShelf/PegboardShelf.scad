@@ -1,7 +1,7 @@
 include <BOSL2/std.scad>
 use <noyau/utils.scad>
 
-preview = true;
+preview = false;
 
 HEIGHT = 60;
 PLANK_WIDTH = 50;
@@ -40,6 +40,7 @@ module fake_hook() {
   fwd(1) left(1) cuboid([37, 2, 4], anchor=LEFT);
   yrot(90) cyl(d=4, h=37, anchor=BOTTOM);
   zrot(HOOK_ANGLE) yrot(90) cyl(d=4, h=50);
+  right(4) xrot(90) cuboid([6, 4, 9]);
 }
 
 module side(sliced=false) {
@@ -65,7 +66,7 @@ module plank() {
 if (preview) {
   fwd(PLANK_WIDTH*2) union() {
     side(sliced = true);
-    hook();
+    //hook();
   }
   mirror_copy([1,0,0]) left(PLANK_LENGTH/2) {
     side();
