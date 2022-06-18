@@ -1,7 +1,7 @@
 include <BOSL2/std.scad>
 use <noyau/utils.scad>
 
-preview = true;
+preview = false;
 
 HEIGHT = 60;
 PLANK_WIDTH = 50;
@@ -10,7 +10,7 @@ PLANK_LENGTH = 100;
 MARGIN = 6;
 DEPTH = 7;
 
-HOOK_ANGLE = 49;
+HOOK_ANGLE = 51;
 
 WIDTH = PLANK_WIDTH + MARGIN * 2;
 
