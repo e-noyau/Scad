@@ -6,7 +6,7 @@ hose_height = 11.4;
 depth = 1.2;
 
 module magnet() {
-  metal() up(.8) union() {
+  metal() up(.4) union() {
     cyl(d=10, h=1.7, anchor=BOTTOM);
     cuboid([10,10,1.7], anchor=BOTTOM+BACK);
   }
