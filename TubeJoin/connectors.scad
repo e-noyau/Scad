@@ -12,7 +12,7 @@ thickness = 2;
 friction_scale = 1.03;
 
 // Number of faces on round surfaces.
-$fn=50;
+$fn=100;
 
 
 module Printy_L_connector() {
@@ -22,12 +22,12 @@ module Printy_L_connector() {
 nudge = .001;
 
 module pin(inside_d = outside_diameter - thickness,
-           inside_l = undef, rounded = true) {
+           inside_l = undef, rounded = true, scale = 1 / friction_scale) {
   
   inside_l = (inside_l == undef) ? inside_d : inside_l;
   
   rounding_vectors = rounded ? [0,0,1,1] : [0,0,0,0];
-  xrot(180) yflip_copy()
+  scale(scale) xrot(180) yflip_copy()
     prismoid(
       size1 = [inside_d / 3, inside_l / 3],
       h=inside_d / 5,
@@ -56,8 +56,8 @@ module base_connector(
       cyl(d = inside_d, h = inside_l, anchor = BOTTOM, chamfer2 = inside_d/40);
       cyl(d = outside_d, h = outside_l, anchor = TOP);
     }
-    up(inside_l+nudge) scale(friction_scale) xrot(180)
-      pin(inside_d, inside_l, rounded = false);
+    up(inside_l+nudge) xrot(180)
+      pin(inside_d, inside_l, rounded = false, scale = 1);
     up(inside_l / 2) inserts(inside_d);
   }
 }
@@ -194,8 +194,33 @@ module 4ways_connector(
   }
 }
 
+module fit_test(
+  inside_d = outside_diameter - thickness, outside_d = outside_diameter,
+  inside_l = undef) {
+
+  inside_l = (inside_l == undef) ? inside_d : inside_l;
+  outside_l = 3;
+
+  back(outside_d + 3) zrot_copies(n = 2) right(2) yrot(90) difference() {
+      base_connector(inside_d, outside_d, inside_l, outside_l / 2);
+    cuboid([
+      (outside_l + inside_l) * 3,
+      outside_d * 3,
+      (outside_l + inside_l) * 3
+    ], anchor = LEFT);
+  }
+  xdistribute(inside_d/2) {
+    pin(scale = 1);
+    pin(scale = 1.1);
+    pin(scale = 1.2);
+    pin(scale = 1.3);
+  }
+}
+ 
+fit_test(); 
 
 
+/*
 
 for (x = [outside_diameter, outside_diameter*3]) {
   right(x * 5) L_connector(inside_d = x - thickness, outside_d = x);
@@ -206,3 +231,4 @@ for (x = [outside_diameter, outside_diameter*3]) {
 
 base_connector(outside_diameter - thickness, outside_diameter, 
                outside_diameter, outside_diameter);
+*/
