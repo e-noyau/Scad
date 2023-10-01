@@ -7,19 +7,23 @@ outside_diameter = 27;
 // Tube thickness, aka the difference between the inside and outside diameter.
 thickness = 2;
 
-// The difference in size between the pin and the pin receptacle. Depends on
-// your printer's precision.
+// The difference in size between the pin and the pin receptacle. Depends on your printer's precision.
 friction_scale = 1.03;
 
 // Number of faces on round surfaces.
 $fn=100;
 
+// The diameter of the insert to plan for.
+insert_dia = 5.4;
 
-module Printy_L_connector() {
-  import("printy-pipes-construction-toy-updated-model_files/L Connector/L Connector.stl");
-}
+// The depth the insert should be pushed to/
+insert_depth = 6;
 
+
+// Ignore, stops the renderer from bugging out.
 nudge = .001;
+
+
 
 module pin(inside_d = outside_diameter - thickness,
            inside_l = undef, rounded = true, scale = 1 / friction_scale) {
@@ -38,15 +42,21 @@ module pin(inside_d = outside_diameter - thickness,
 
 // Base modules to build the connectors
 
-
 module inserts(inside_d) {
-    insert_dia = 2.7 * 2;
-    insert_depth = 6;
-    
-    xrot(90) zflip_copy() up(inside_d /2)
-      cyl(d = insert_dia, h = insert_depth, anchor = TOP);
+    xrot(90) zflip_copy() up(inside_d / 2)
+      cyl(d = insert_dia, h = insert_depth * 2);
 }
 
+module hole_template(inside_d, inside_l) {
+  difference() {
+    cyl(d = inside_d + 2, h = (inside_l / 2) + 2,
+        circum = true, anchor = BOTTOM);
+    up(2) cyl(d = inside_d + 2 * (1/friction_scale), 
+              h = (inside_l / 2) + nudge,
+              anchor = BOTTOM);
+    up((inside_l / 2) + 2) inserts(inside_d);
+  }
+}
 
 module base_connector(
   inside_d, outside_d, inside_l, outside_l) {
@@ -218,11 +228,13 @@ module fit_test(
 }
  
 fit_test(); 
+fwd(outside_diameter)
+  hole_template(outside_diameter - thickness, outside_diameter - thickness);
 
 
 /*
 
-for (x = [outside_diameter, outside_diameter*3]) {
+for (x = [outside_diameter]) { //}, outside_diameter*3]) {
   right(x * 5) L_connector(inside_d = x - thickness, outside_d = x);
   left(x * 5) T_connector(inside_d = x - thickness, outside_d = x);
   back(x * 5) I_connector(inside_d = x - thickness, outside_d = x);
