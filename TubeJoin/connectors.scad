@@ -2,10 +2,10 @@ include <BOSL2/std.scad>
 use <noyau/utils.scad>
 
 // Inside diameter of the tube to connect
-outside_diameter = 27;
+outside_diameter = 27.1;
 
 // Tube thickness, aka the difference between the inside and outside diameter.
-thickness = 2;
+thickness = 1.8;
 
 // The difference in size between the pin and the pin receptacle. Depends on your printer's precision.
 friction_scale = 1.03;
@@ -17,12 +17,10 @@ $fn=100;
 insert_dia = 5.4;
 
 // The depth the insert should be pushed to/
-insert_depth = 6;
-
+insert_depth = 5.99;
 
 // Ignore, stops the renderer from bugging out.
 nudge = .001;
-
 
 
 module pin(inside_d = outside_diameter - thickness,
@@ -30,7 +28,8 @@ module pin(inside_d = outside_diameter - thickness,
   
   inside_l = (inside_l == undef) ? inside_d : inside_l;
   
-  rounding_vectors = rounded ? [0,0,1,1] : [0,0,0,0];
+  r = inside_d / 30;
+  rounding_vectors = rounded ? [0,0,r,r] : [0,0,0,0];
   scale(scale) xrot(180) yflip_copy()
     prismoid(
       size1 = [inside_d / 3, inside_l / 3],
@@ -49,9 +48,9 @@ module inserts(inside_d) {
 
 module hole_template(inside_d, inside_l) {
   difference() {
-    cyl(d = inside_d + 2, h = (inside_l / 2) + 2,
-        circum = true, anchor = BOTTOM);
-    up(2) cyl(d = inside_d + 2 * (1/friction_scale), 
+    cyl(d = inside_d * friction_scale + 1, h = (inside_l / 2) + 2,
+        anchor = BOTTOM);
+    up(2) cyl(d = inside_d * friction_scale, 
               h = (inside_l / 2) + nudge,
               anchor = BOTTOM);
     up((inside_l / 2) + 2) inserts(inside_d);
@@ -226,7 +225,7 @@ module fit_test(
     pin(scale = 1.3);
   }
 }
- 
+
 fit_test(); 
 fwd(outside_diameter)
   hole_template(outside_diameter - thickness, outside_diameter - thickness);
