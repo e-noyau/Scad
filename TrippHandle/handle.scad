@@ -1,17 +1,19 @@
 include <BOSL2/std.scad>
 use <noyau/utils.scad>
 
+// Replacement handle button for a Tripp luggage.
+
 LENGTH=137;
 WIDTH=10.90;
 HEIGHT=6.03;
 HEIGHT_TIP=4.82;
 BUTTON_LENGTH=44.94;
 BUTTON_MIN_LENGTH=41;
-BUTTON_WIDTH=15.09;
+BUTTON_WIDTH=15.1; // 15.5; // 16.5; //15.09;
 BUTTON_HEIGHT=12.90;
 HOLE_WIDTH=13.65;
 HOLE_DIA=7.4;
-HOLE_SEPARATION=84.3;
+HOLE_SEPARATION=86; //84.3;
 
 module holes() {
   difference() {
@@ -32,6 +34,7 @@ module holes() {
       scale([1.1,1.1,1.01]) up(HEIGHT) xrot(180)
         wedge([WIDTH, (LENGTH-HOLE_SEPARATION)/2, HEIGHT-HEIGHT_TIP], anchor=BOTTOM+BACK, spin=-90);
     }
+    down(.01) cyl(d=10, h=10, rounding2=2, anchor=BOTTOM, $fn=50);
   }
 }
 
