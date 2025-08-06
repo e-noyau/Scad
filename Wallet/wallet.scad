@@ -1,7 +1,7 @@
 include <BOSL2/std.scad>
 
 // This makes for a minimal wallet.
-// Inspired from https://n-o-d-e.net/wallet.html
+// Inspired by https://n-o-d-e.net/wallet.html
 
 // This was mostly done to add support for my own middle card, which hold one
 // key and can also be used as money clip to wrap bills around. While I was at
@@ -13,6 +13,23 @@ FINGER_ELIPSE = [15, 9];
 // I like a slim wallet, but if you prefer something more chunky, you can bump up this number.
 DEPTH = 1.5;
 
+// Owner name
+FIRST_NAME = "Contact↓";
+LAST_NAME = "↓Info";
+
+// Contact info
+CONTACT_PHONE = "+33 (0)6 03 70 56 37";
+// Email
+EMAIL = "eric@noyau.net";
+
+
+// The font used to render the text. See Help/Font List in OpenSCAD for the list of available fonts.
+FONT = "calibri:style=bold";
+
+// Font size, in points. Will be divided by two to make two lines on the back of the tag.
+FONT_SIZE = 5;
+
+
 /* [Hidden] */
 // Size of a credit card
 LENGTH = 85.6;
@@ -23,6 +40,7 @@ ELASCTIC_WIDTH = 31;
 ELASCTIC_DEPTH = 1.1;
 
 $fs = .2;
+$fa = 3;
 
 // 2D version of the form used for all elements of the wallet.
 module WalletBase2D(fingers = true, money_hole = false) {
@@ -37,9 +55,41 @@ module WalletBase2D(fingers = true, money_hole = false) {
   }
 }
 
-// The top of the wallet is really simple.
+module embeddedText() {
+  first_name_size = textmetrics(text = FIRST_NAME, size = FONT_SIZE, font = FONT).size;
+  last_name_size = textmetrics(text = LAST_NAME, size = FONT_SIZE, font = FONT).size;
+  max_name_height = max(first_name_size[1], last_name_size[1]);
+
+  depth = DEPTH - .2;
+  up(.21)
+  color([ .2,  .2, .2]) union() {
+    union() back(WIDTH/2 - max_name_height - (WIDTH-ELASCTIC_WIDTH)/8) {
+      skip = (LENGTH-FINGER_ELIPSE[0])/4 + FINGER_ELIPSE[0]/2;
+      left(skip) text3d(text = FIRST_NAME, size = FONT_SIZE, font = FONT, h = depth, anchor = BOTTOM);
+      right (skip) text3d(text = LAST_NAME, size = FONT_SIZE, font = FONT, h = depth, anchor = BOTTOM);
+    }
+    skew =  ELASCTIC_WIDTH / 5;
+    back(skew) text3d(text = CONTACT_PHONE, size = FONT_SIZE, font = FONT, h = depth, atype = "ycenter", anchor = CENTER+BOTTOM);
+    fwd(skew) text3d(text = EMAIL, size = FONT_SIZE, font = FONT, h = depth, atype = "ycenter", anchor = CENTER+BOTTOM);
+  }
+}
+
+// The top of the wallet.
 module WalletTop() {
-  linear_extrude(height = DEPTH) WalletBase2D();
+  difference() {
+    linear_extrude(height = DEPTH, convexity = 3) WalletBase2D();
+    embeddedText();
+  }
+  if(false) { //$preview) {
+    wave_texture = texture("wave_ribs");
+    color([ .4,  .4, .4]) up(DEPTH + ELASCTIC_DEPTH) yrot(90) #linear_sweep(
+      rect(size = [ELASCTIC_DEPTH, ELASCTIC_WIDTH]),
+      h = LENGTH,
+      texture = wave_texture,
+      tex_size = [3,3],
+      style = "concave",
+      anchor = CENTER+RIGHT);
+  }
 }
 
 // The bottom has holes for sewing the elastic and a recess to hide it.
@@ -77,6 +127,14 @@ module iseo_key() {
   }
 }
 
+module jmp4_key() {
+  left(13.622) fwd(30.74) linear_extrude(2.3)
+    difference() {
+      import("JPM4x1200.svg", dpi = 500);
+      import("JPM4x1200_hole.svg", dpi = 500);
+    }
+}
+
 module KeyCard() {
   height = 3.6;
   up(height) xrot(180) difference() {
@@ -85,12 +143,19 @@ module KeyCard() {
     down(.01) left(6.5) back(13) zrot(10) iseo_key();
     // Key push hole 
     left(13) back(6) cyl(d=15,10);
+
+    // Key imprint
+    down(.01) right(7) fwd(10) zrot(-80) jmp4_key();
+    // Key push hole 
+    right(15) fwd(5.5) cyl(d=15,10);
+
   }
 }
 
+// At the top level so it van be exported directly as a 3dmf and printed in two colors.
 ydistribute(spacing = WIDTH + 10) {
-  KeyCard();
+  //KeyCard();
   WalletTop();
   WalletBottom();
 }
-
+embeddedText();
