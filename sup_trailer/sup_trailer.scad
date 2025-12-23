@@ -3,25 +3,54 @@ use <noyau/utils.scad>
 
 $fn = $preview ? 80: 300;
 
-// Tube geometry
+// Geometry of the tube all the parts are sliding into or over.
 tube_inner_radius = 14;
 tube_outer_radius = 16;
 tube_length = 770;
 
-overlapping_tube_radius = tube_outer_radius + .13;
+// To let thing rotate greely around the tube, this is the clearance between the
+// tube and the thing that are rotating over it.
+radius_clearance = .13;
+
+// Internal radius of the parts rotating around the tube.
+overlapping_tube_radius = tube_outer_radius + radius_clearance;
 
 // Diameter of the hole for the tension string
-string_dia = 7.5;
+string_dia = 6;
 
 // Caracteristics of the locking tongue
-depth_lock = 16;
-height_lock = 8;
-width_lock = 20;
-height_pin = 8; // Estimated!!!
+
+// How munch thelocking tongue is protuding horizontally under the bike support.
+depth_tongue = 16;
+
+// The height of the tongue, the higher the stronger, but too high and it's
+// impossible to slide in position.
+height_tongue = 8;
+
+// Full width of the tongue
+width_tongue = 34;
+
+// The small inner vertical part (also used by the rotating bit)
+width_inner_lock = 21;
+
+// The depth of the small inner lock
+depth_inner_lock = 3;
+
+// Length of the tongue support over the tube
 lock_support_depth = 15;
 
-wall_size = 2;
-tongue_depth = 10;
+// Lenght of the back of the twisting part.
+back_length = 20;
+
+// Controls the printed tube walls
+wall_size = 4;
+
+// Length of the rotating lock over the tube.
+depth_lock = 10;
+
+// Space between the tongue and the rotating tube.
+height_pin = 7 + wall_size; // Estimated!!!
+
 
 module main_tube() {
   #tube(
@@ -30,6 +59,8 @@ module main_tube() {
   );
 }
 
+// The plug at the far end of the tube, with a hole inside to let the string
+// go through.
 module end_cap(inner_length = 40, outer_length = 7, cap_radius = tube_outer_radius, rounded =true) {
   // The part that slides inside the main tube
   tube(
@@ -45,68 +76,76 @@ module end_cap(inner_length = 40, outer_length = 7, cap_radius = tube_outer_radi
   );
 }
 
-module bike_anchor() {
-  zrot(-90) yrot(-90) zflip_copy() linear_extrude(height = width_lock/2, scale=.95)
-  trapezoid(
-    h = depth_lock,
-    w1 = height_lock,
-    ang = [85, 90],
-    anchor = FRONT + RIGHT,
-    rounding = [0, 6, 0, 0]
-  );
+module tongue() {
+  zrot(-90) yrot(-90) zflip_copy() 
+    linear_extrude(height = width_tongue/2, scale=.95)
+      trapezoid(
+        h = depth_tongue,
+        w1 = height_tongue,
+        ang = [85, 90],
+        anchor = FRONT + RIGHT,
+        rounding = [0, 6, 0, 0]
+      );
 }
 
-module end_cap_anchor() {
-  end_cap(outer_length = lock_support_depth);
+module rotating_tongue() {
+  zrot(180) down(height_pin + overlapping_tube_radius) tongue();
   difference() {
-    prismoid(
-      h = (height_lock + height_pin) * 2,
-      size1 =  [lock_support_depth, width_lock],
-      size2 =  [lock_support_depth, tube_outer_radius * 2],
-      anchor =  RIGHT+TOP, rounding = [0,3,3,0]
-    );
-    right(.5) cyl(h = lock_support_depth + 1, r = string_dia + 3, orient = RIGHT, anchor = TOP );
-  }
-  down(height_pin + tube_outer_radius) bike_anchor();
-}
-
-module middle_anchor() {
-  zrot(180) down(height_pin + tube_outer_radius) bike_anchor();
-  difference() {
-    hull() {
-      tube(
-        h = lock_support_depth, ir = overlapping_tube_radius, wall = wall_size,
-        orient = RIGHT, anchor = BOTTOM
-      );
-      down(height_pin + tube_outer_radius) cuboid(
-        [lock_support_depth, width_lock, height_lock],
-        anchor = LEFT+TOP, rounding = 6, edges = BOTTOM+RIGHT
-      );
+      union() {
+        hull() {
+          tube(
+            h = lock_support_depth,
+            ir = overlapping_tube_radius,
+            wall = wall_size,
+            orient = RIGHT, anchor = BOTTOM
+          );
+          down(height_pin + overlapping_tube_radius)
+            cuboid(
+              [lock_support_depth, width_tongue, height_tongue],
+              anchor = LEFT+TOP, rounding = 6, edges = BOTTOM+RIGHT,
+              teardrop = 45
+            );
+        }
+        // inner lock
+        left(depth_inner_lock)
+        difference() {
+          down(height_pin + overlapping_tube_radius) 
+          cuboid(
+            [depth_inner_lock, width_inner_lock, height_pin * 2], anchor=LEFT+BOTTOM,
+            rounding = 1.5, edges = [LEFT+TOP, LEFT+BACK, LEFT+FRONT]);
+          left(.1) cyl(
+                h=depth_inner_lock*3, r=overlapping_tube_radius + wall_size + .51,
+                orient = LEFT, anchor = TOP,
+                circum = true
+              );
+            }
     }
     left(.1) cyl(
-      h=tube_length, r=overlapping_tube_radius,
+      h=tube_length, r=overlapping_tube_radius+.1,
       orient = LEFT, anchor = TOP,
       circum = true
     );
   }
 }
 
-module twist_part(endcap = false) {
+module twist_lock(endcap = false) {
   module front_part() {
     // Around the tube front
     tube(
-      h = depth_lock + tongue_depth, ir = overlapping_tube_radius, wall = wall_size,
+      h = depth_tongue + depth_lock,
+      ir = overlapping_tube_radius + .1,
+      wall = wall_size,
       orient = LEFT, anchor = BOTTOM
     );
-    // Tongue to hold the part in place
-    left(depth_lock) intersection() {
-      down(tube_outer_radius) cuboid(
-        [tongue_depth, width_lock, (height_lock + height_pin + wall_size) * 2],
+    // Lock to hold the part in place
+    left(depth_tongue) intersection() {
+      down(overlapping_tube_radius) cuboid(
+        [depth_lock, width_inner_lock, (height_pin + wall_size) * 2],
         anchor = RIGHT
       );
       tube(
-        h = tongue_depth,
-        ir = overlapping_tube_radius, wall = height_lock + height_pin + wall_size,
+        h = depth_lock,
+        ir = overlapping_tube_radius, wall = height_pin + wall_size,
         orient = LEFT, anchor = BOTTOM
       );
     }
@@ -115,18 +154,18 @@ module twist_part(endcap = false) {
   module back_part() {
       // Around the tube back
       tube(
-        h = lock_support_depth, ir = overlapping_tube_radius, wall = wall_size,
+        h = back_length, ir = overlapping_tube_radius + .1, wall = wall_size,
         orient = RIGHT, anchor = BOTTOM
       );
   }
 
   module connection_part() {
     // Connection between the front and the back
-    back_half(y = -10) top_half() 
+    back_half(y = -10) top_half(z = -10)
     scale([1.2,1,1])
       difference() {
-        sphere(r = tube_outer_radius *1.5);
-        sphere(r = (tube_outer_radius *1.5) - wall_size);
+        sphere(r = tube_outer_radius + wall_size + 7.5);
+        sphere(r = (tube_outer_radius + wall_size + 4.5));
       }
   }
 
@@ -138,12 +177,12 @@ module twist_part(endcap = false) {
         yrot(90) arc_copies(d=tube_outer_radius, sa=97, ea=198, n=5)
           cuboid([20,3,lock_support_depth*4], anchor = LEFT);
         cyl(
-          h = lock_support_depth * 4, r = overlapping_tube_radius + wall_size +clearance,
+          h = lock_support_depth * 4, r = overlapping_tube_radius + wall_size + clearance,
           orient = RIGHT
         );
       }
       scale([1.2,1,1])
-          sphere(r = tube_outer_radius *1.5);
+          sphere(r = tube_outer_radius + wall_size + 6.5);
     }
   }
 
@@ -152,7 +191,8 @@ module twist_part(endcap = false) {
       union() {
         front_part();
         right(lock_support_depth+.3) back_part();
-        right(lock_support_depth /2) {
+        z_angle = endcap ? 180 : 0;
+        right(lock_support_depth /2) zrot(z_angle) {
           connection_part();
           ridges_part();
         }
@@ -167,38 +207,34 @@ module twist_part(endcap = false) {
   }
 
   if(endcap)
-    left(tongue_depth + depth_lock -7) end_cap(rounded = false, inner_length = depth_lock + tongue_depth - 7);
+    left(depth_lock + depth_tongue - 7)
+      end_cap(
+        rounded = false, 
+        inner_length = depth_tongue + depth_lock - 7.2,
+        cap_radius = tube_outer_radius + wall_size
+      );
   middle_twist_assembly();
 }
 
 module full_assembly() {
   plastic() main_tube();
   steel() zrot(180) left(tube_length) end_cap();
-  steel() end_cap_anchor();
-  right(150) {
-    #steel() middle_anchor();
-    stainless() twist_part();
-  }
-}
-
-module locked_full_assembly() {
-  plastic() main_tube();
-  steel() zrot(180) left(tube_length) end_cap();
-  steel() twist_part(endcap=true);
-  middle_anchor();
+  steel() twist_lock(endcap=true);
+  rotating_tongue();
   right(150) zrot(180) {
-    middle_anchor();
-    stainless() twist_part();
+    rotating_tongue();
+    stainless() twist_lock();
   }
 }
 
 if ($preview) {
-  locked_full_assembly();
+  full_assembly();
+  //rotating_tongue();
 } else {
-  back(50) yrot(-90) right(lock_support_depth) end_cap_anchor();
-  fwd(50) yrot(-90) right(lock_support_depth) zrot(180) middle_anchor();
+  back(50) yrot(-90) right(lock_support_depth) zrot(180) rotating_tongue();
+  fwd(50) yrot(-90) right(lock_support_depth) zrot(180) rotating_tongue();
   right(55) yrot(-90) right(7) end_cap();
-  left(60) yrot(-90) right(lock_support_depth*2) twist_part();
-  yrot(-90) right(lock_support_depth + tongue_depth) twist_part(endcap=true);
+  left(60) yrot(-90) right(lock_support_depth*2) twist_lock();
+  yrot(-90) right(lock_support_depth + depth_lock) twist_lock(endcap=true);
 
 }
