@@ -1,23 +1,29 @@
 // Measured thickness of a single card. 
-CardThickness = .3;
+CardThickness = .33;
 
+// Separation between two decks one behind each other
 SeparationCardCount = 20;
+
+// Separation between two decks side by side.
 SideSeparation = 18;
 
+// Angle of the cards
 angle = 40;
 
+// Ignore, testing things
 testing = 0;
-testSlice = 1;
+testSlice = 0;
 
 // Space available inside the box
 BoxSize = [293, 210, 54];
 
 // Size of the various cards. There are 3 types of cards in Kemble's cascade.
-SpaceCardSize = [88, 63, CardThickness];
-SensorCardSize = [44, 63, CardThickness];
-OtherCardSize = [44, 63, CardThickness];
+// Adding 1mm of space on the sides.
+SpaceCardSize  = [88 + 1, 63, CardThickness];
+SensorCardSize = [44 + 1, 63, CardThickness];
+OtherCardSize  = [44 + 1, 63, CardThickness];
 
-// 
+// How high the insert will be.
 insertHeight = BoxSize.z * .3;
 
 // All the decks that need to fit in the box, grouped by card size.
@@ -29,10 +35,10 @@ SpaceCardDecks = [
     ["Fleet1", 16],
     ["Special", 3],
     ["Bosses", 4],
-    ["Banshee", 4],  // double check boss names and counts
-    ["Cannonram", 8],
-    ["Tundrageist", 8],
+    ["Banshee", 8],
     ["Behemoth", 8],
+    ["Cannonram", 4],
+    ["Tundrageist", 8],
 ];
 
 SensorDecks = [
@@ -63,7 +69,7 @@ DeckSeparation = inclinedDeckThicknessForCardCount(angle, SeparationCardCount);
 // The returned vector length is one more than the passed in, to have the end position.
 function positionsForDecks(angle, decks) =
   [for (a = 0, i = 0;  i <= len(decks); a = a + (i<len(decks) ? decks[i][1] : 0), i = i+1)
-      inclinedDeckThicknessForCardCount(angle, a + (i<len(decks) ? i : i-1) * SeparationCardCount)];
+      inclinedDeckThicknessForCardCount(angle, a + (i<len(decks) ? i : i-1) * SeparationCardCount) + 1];
 
 // Primitive to build a skewed cube. 
 // * Skews a cube by the given angle along the y axis
@@ -101,10 +107,10 @@ module PlacedDecks(angle, size, decks) {
       cardDeck(angle, size, count);
   }
   translate([-DeckSeparation/3,0,0])
-  skewedCube(angle, [(cardCountForDecks(decks) + SeparationCardCount/3)*size.z, size.x - 25, size.y]);
+    skewedCube(angle, [(cardCountForDecks(decks) + SeparationCardCount/3)*size.z, size.x - 28, size.y]);
 }
 
-// Generates text for each decks, 
+// Generates text for each decks.
 module textForDecks(angle, size, decks, textPosition) {
   positions = positionsForDecks(angle, decks);
   for (deckIndex = [0: len(decks)-1]) {
@@ -135,12 +141,12 @@ module allOrganizedText(angle) {
   AfterSpace = inclinedDeckThicknessForCardCount(angle,cardCountForDecks(SpaceCardDecks)+SeparationCardCount);
   AfterSensors = inclinedDeckThicknessForCardCount(angle,cardCountForDecks(SensorDecks)+SeparationCardCount);
 
-  textForDecks(angle, SpaceCardSize, SpaceCardDecks, [21,35,insertHeight]);
+  textForDecks(angle, SpaceCardSize, SpaceCardDecks, [20.5,32,insertHeight]);
   translate([AfterSpace,0, 0]) {
     translate([0, -(SensorCardSize.x + SideSeparation)/2, 0]) 
-      textForDecks(angle, SensorCardSize, SensorDecks, [21,12,insertHeight]);
+      textForDecks(angle, SensorCardSize, SensorDecks, [20.5,9.5,insertHeight]);
     translate([0, (SensorCardSize.x + SideSeparation)/2, 0])
-      textForDecks(angle, OtherCardSize, OtherDecks, [21,12,insertHeight]);
+      textForDecks(angle, OtherCardSize, OtherDecks, [20.5,9.5,insertHeight]);
   }
 }
 
@@ -153,7 +159,7 @@ module boxInsert() {
     union() {
       // The insert for the box
       translate([0,-BoxSize.y * splitx / 2, 0]) 
-        cube([BoxSize.x - holeLength - border * 2, BoxSize.y * splitx + SideSeparation ,insertHeight]);
+        cube([BoxSize.x, BoxSize.y * splitx + SideSeparation ,insertHeight]);
       // All the text
       translate([-10, 0, 0])
         allOrganizedText(angle);
